@@ -398,14 +398,30 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 <div id="tab-landingpage" class="tab-content">
   <div class="page-header">
     <h1>Landing Page view</h1>
-    <p>Landing page performance for the services vertical</p>
+    <p>Traffic to the Services landing page, where it comes from, and click-through into each service funnel</p>
   </div>
+
+  <div style="display:flex;align-items:center;gap:10px;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:var(--card-radius);padding:12px 16px;margin-bottom:20px;font-size:13px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span><strong>Sample data.</strong> Figures on this tab are illustrative placeholders. The source/attribution breakdown isn't in the current export &mdash; real GA4 numbers will be plugged in later.</span>
+  </div>
+
+  <div class="metrics-row" id="lp-kpis"></div>
+
   <div class="card">
-    <div style="text-align:center; padding:64px 24px; color:var(--text-secondary);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--text-muted);margin-bottom:16px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      <div style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Coming soon</div>
-      <div style="font-size:14px;max-width:420px;margin:0 auto;line-height:1.5;">Landing page metrics will live here. Content to be defined.</div>
+    <div class="card-title">Where Services landing page visits come from</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Source of sessions landing on <code style="font-size:11px;">/en/services-for-mumz</code></div>
+    <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:center;">
+      <div style="width:220px;height:220px;flex-shrink:0;"><canvas id="lp-source-chart"></canvas></div>
+      <div style="flex:1;min-width:300px;" id="lp-source-legend"></div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Clicks on each service</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">How many users clicked into each service from the landing page, and where those clicks came from. Click any row to open its detailed funnel.</div>
+    <div id="lp-channel-legend" style="margin-bottom:14px;"></div>
+    <div style="overflow-x:auto;" id="lp-services-table"></div>
   </div>
 </div>
 
@@ -797,6 +813,7 @@ function switchTab(tab, el) {
   else if (tab === 'daily') { updateDailyEvents(); renderDaily(); }
   else if (tab === 'trends') renderTrends();
   else if (tab === 'allservices') renderAllServices();
+  else if (tab === 'landingpage') renderLandingPage();
   else if (tab === 'datamanager') renderInventory();
 }
 
@@ -1598,6 +1615,111 @@ function saveCvrConfig() {
   localStorage.setItem('mw_cvr_config', JSON.stringify(cfg));
   renderAllServices();
   alert('CVR formulas saved.');
+}
+
+// ====== LANDING PAGE VIEW (sample data — swap for real GA4 later) ======
+const LP_CHANNELS = [
+  { key:'banner',   label:'Homepage banner',    color:'#5468ff' },
+  { key:'direct',   label:'Direct',             color:'#22c55e' },
+  { key:'push',     label:'Push notifications', color:'#f59e0b' },
+  { key:'organic',  label:'Organic search',     color:'#3b82f6' },
+  { key:'email',    label:'Email',              color:'#8b5cf6' },
+  { key:'paid',     label:'Paid / Social',      color:'#ec4899' },
+  { key:'referral', label:'Referral',           color:'#94a3b8' },
+];
+
+// Illustrative numbers. `clicks` is the nominal volume; `mix` is the source split (fractions).
+const LP_DATA = {
+  visits: 48200,
+  sources: { banner:19800, direct:10600, push:7700, organic:4350, email:2900, paid:1900, referral:950 },
+  services: [
+    { name:'Babysitter / Nanny', clicks:8200, mix:{banner:.44,direct:.19,push:.15,organic:.10,email:.06,paid:.04,referral:.02} },
+    { name:'Party Planning',     clicks:5100, mix:{banner:.38,direct:.16,push:.22,organic:.09,email:.07,paid:.06,referral:.02} },
+    { name:'Wallpaper',          clicks:3800, mix:{banner:.30,direct:.20,push:.12,organic:.20,email:.05,paid:.10,referral:.03} },
+    { name:'Gear Refresh',       clicks:3100, mix:{banner:.48,direct:.18,push:.14,organic:.08,email:.06,paid:.04,referral:.02} },
+    { name:'Telehealth',         clicks:2600, mix:{banner:.26,direct:.22,push:.18,organic:.16,email:.08,paid:.07,referral:.03} },
+    { name:'Home Cleaning',      clicks:2200, mix:{banner:.34,direct:.21,push:.16,organic:.13,email:.07,paid:.06,referral:.03} },
+    { name:'Healthy Home',       clicks:1700, mix:{banner:.30,direct:.24,push:.14,organic:.17,email:.07,paid:.05,referral:.03} },
+    { name:'Kids Interior',      clicks:1500, mix:{banner:.32,direct:.20,push:.13,organic:.18,email:.06,paid:.08,referral:.03} },
+    { name:'Tutor at Home',      clicks:1500, mix:{banner:.28,direct:.23,push:.15,organic:.18,email:.08,paid:.05,referral:.03} },
+    { name:'Doctor at Home',     clicks:1300, mix:{banner:.24,direct:.25,push:.19,organic:.16,email:.09,paid:.04,referral:.03} },
+  ]
+};
+
+function lpKpi(label, value, sub) {
+  return '<div class="metric-card"><div class="mc-label">' + label + '</div><div class="mc-value">' + value + '</div><div class="mc-sub">' + (sub||'') + '</div></div>';
+}
+
+function lpServiceCounts(svc) {
+  const counts = {}; let total = 0;
+  LP_CHANNELS.forEach(c => { const n = Math.round(svc.clicks * (svc.mix[c.key]||0)); counts[c.key] = n; total += n; });
+  return { counts, total };
+}
+
+function renderLandingPage() {
+  // Resolve per-service source counts (and let clicks equal the sum so the bars stay consistent)
+  const rows = LP_DATA.services.map(s => { const cc = lpServiceCounts(s); return { name:s.name, clicks:cc.total, counts:cc.counts }; });
+  const totalClicks = rows.reduce((a,b) => a + b.clicks, 0);
+  const ctr = LP_DATA.visits ? totalClicks / LP_DATA.visits : 0;
+  const topSource = LP_CHANNELS.map(c => ({ c, n: LP_DATA.sources[c.key]||0 })).sort((a,b) => b.n - a.n)[0];
+
+  document.getElementById('lp-kpis').innerHTML = [
+    lpKpi('Services LP visits', LP_DATA.visits.toLocaleString(), '/en/services-for-mumz'),
+    lpKpi('Total service clicks', totalClicks.toLocaleString(), 'across ' + rows.length + ' services'),
+    lpKpi('Click-through rate', fmtPct(ctr), 'service clicks ÷ visits'),
+    lpKpi('Top traffic source', topSource.c.label, fmtPct(topSource.n / LP_DATA.visits) + ' of visits'),
+  ].join('');
+
+  // Source doughnut
+  destroyChart('lp-source-chart');
+  const sctx = document.getElementById('lp-source-chart').getContext('2d');
+  chartInstances['lp-source-chart'] = new Chart(sctx, {
+    type: 'doughnut',
+    data: { labels: LP_CHANNELS.map(c => c.label), datasets: [{ data: LP_CHANNELS.map(c => LP_DATA.sources[c.key]||0), backgroundColor: LP_CHANNELS.map(c => c.color), borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + fmtPct(ctx.parsed / LP_DATA.visits) + ')' } } } }
+  });
+
+  // Source legend table
+  document.getElementById('lp-source-legend').innerHTML =
+    '<table class="data-table"><thead><tr><th>Source</th><th class="num">Visits</th><th class="num">Share</th></tr></thead><tbody>' +
+    LP_CHANNELS.map(c => { const n = LP_DATA.sources[c.key]||0; return '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + c.color + ';margin-right:8px;vertical-align:middle;"></span>' + c.label + '</td><td class="num">' + n.toLocaleString() + '</td><td class="num">' + fmtPct(n / LP_DATA.visits) + '</td></tr>'; }).join('') +
+    '</tbody></table>';
+
+  // Channel legend for the stacked bars
+  document.getElementById('lp-channel-legend').innerHTML =
+    '<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--text-secondary);">' +
+    LP_CHANNELS.map(c => '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + c.color + ';margin-right:5px;vertical-align:middle;"></span>' + c.label + '</span>').join('') +
+    '</div>';
+
+  // Services table (sorted by clicks)
+  const sorted = [...rows].sort((a,b) => b.clicks - a.clicks);
+  const body = sorted.map(r => {
+    const seg = LP_CHANNELS.map(c => { const n = r.counts[c.key]||0; const w = r.clicks ? n / r.clicks * 100 : 0; return w > 0 ? '<div title="' + c.label + ': ' + n.toLocaleString() + ' (' + fmtPct(n / r.clicks) + ')" style="width:' + w + '%;background:' + c.color + ';height:100%;"></div>' : ''; }).join('');
+    const share = totalClicks ? r.clicks / totalClicks : 0;
+    const safeName = r.name.replace(/'/g, "\\'");
+    return '<tr style="cursor:pointer;" onclick="goToServiceFunnel(\'' + safeName + '\')">' +
+      '<td style="font-weight:600;">' + r.name + '</td>' +
+      '<td class="num">' + r.clicks.toLocaleString() + '</td>' +
+      '<td class="num">' + fmtPct(share) + '</td>' +
+      '<td style="min-width:220px;"><div style="display:flex;height:14px;border-radius:4px;overflow:hidden;background:#f1f5f9;">' + seg + '</div></td>' +
+      '<td class="num"><span style="color:var(--accent);font-weight:600;white-space:nowrap;">View funnel →</span></td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('lp-services-table').innerHTML =
+    '<table class="data-table"><thead><tr><th>Service</th><th class="num">Clicks</th><th class="num">Share</th><th>Source breakdown</th><th></th></tr></thead><tbody>' + body + '</tbody></table>';
+}
+
+// Deep-link from a service row into the existing Funnel Analysis tab
+function goToServiceFunnel(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('tab-funnel').classList.add('active');
+  const navlink = document.querySelector('.sidebar-nav a[data-tab="funnel"]');
+  if (navlink) navlink.classList.add('active');
+  const sel = document.getElementById('funnel-service');
+  if (sel && [...sel.options].some(o => o.value === name)) sel.value = name;
+  renderFunnel();
+  window.scrollTo(0, 0);
 }
 
 // ====== TAB 5: DATA MANAGER ======

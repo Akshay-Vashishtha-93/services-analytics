@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Services Funnel Analytics | Mumzworld</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.14.0/dist/chartjs-chart-sankey.min.js"></script>
 <style>
 :root {
   --bg: #f8fafc;
@@ -406,22 +407,30 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <span><strong>Sample data.</strong> Figures on this tab are illustrative placeholders. The source/attribution breakdown isn't in the current export &mdash; real GA4 numbers will be plugged in later.</span>
   </div>
 
-  <div class="metrics-row" id="lp-kpis"></div>
-
   <div class="card">
-    <div class="card-title">Where Services landing page visits come from</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Source of sessions landing on <code style="font-size:11px;">/en/services-for-mumz</code></div>
-    <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:center;">
-      <div style="width:220px;height:220px;flex-shrink:0;"><canvas id="lp-source-chart"></canvas></div>
-      <div style="flex:1;min-width:300px;" id="lp-source-legend"></div>
+    <div class="card-title">Acquisition flow</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;" id="lp-flow-caption"></div>
+    <div style="overflow-x:auto;"><div style="min-width:760px;height:480px;"><canvas id="lp-sankey-chart"></canvas></div></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Left band = traffic sources into <code style="font-size:11px;">/en/services-for-mumz</code>. Right band = services clicked (plus visits that left without clicking). Link thickness = volume.</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;">
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">Visit sources</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Share of landing page visits by channel</div>
+      <div style="height:260px;"><canvas id="lp-source-chart"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">Click-through by source</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Visits vs. service clicks for each channel</div>
+      <div style="height:260px;"><canvas id="lp-ctr-chart"></canvas></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">Clicks on each service</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">How many users clicked into each service from the landing page, and where those clicks came from. Click any row to open its detailed funnel.</div>
-    <div id="lp-channel-legend" style="margin-bottom:14px;"></div>
-    <div style="overflow-x:auto;" id="lp-services-table"></div>
+  <div class="card" style="margin-top:20px;">
+    <div class="card-title">Clicks by service &amp; source</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Each bar is a service, segmented by where its clicks came from. Click a bar to open that service's detailed funnel.</div>
+    <div style="height:460px;"><canvas id="lp-services-chart"></canvas></div>
   </div>
 </div>
 
@@ -1646,67 +1655,101 @@ const LP_DATA = {
   ]
 };
 
-function lpKpi(label, value, sub) {
-  return '<div class="metric-card"><div class="mc-label">' + label + '</div><div class="mc-value">' + value + '</div><div class="mc-sub">' + (sub||'') + '</div></div>';
-}
-
 function lpServiceCounts(svc) {
   const counts = {}; let total = 0;
   LP_CHANNELS.forEach(c => { const n = Math.round(svc.clicks * (svc.mix[c.key]||0)); counts[c.key] = n; total += n; });
   return { counts, total };
 }
 
+function lpNodeColor(node) {
+  if (node === 'Services landing page') return '#0f172a';
+  if (node === 'Left without clicking') return '#cbd5e1';
+  const ch = LP_CHANNELS.find(c => c.label === node);
+  if (ch) return ch.color;
+  if (typeof DATA !== 'undefined' && DATA[node] && DATA[node].color) return DATA[node].color;
+  return '#94a3b8';
+}
+
 function renderLandingPage() {
-  // Resolve per-service source counts (and let clicks equal the sum so the bars stay consistent)
+  // Resolve per-service source counts (clicks = sum of source counts so everything reconciles)
   const rows = LP_DATA.services.map(s => { const cc = lpServiceCounts(s); return { name:s.name, clicks:cc.total, counts:cc.counts }; });
   const totalClicks = rows.reduce((a,b) => a + b.clicks, 0);
   const ctr = LP_DATA.visits ? totalClicks / LP_DATA.visits : 0;
-  const topSource = LP_CHANNELS.map(c => ({ c, n: LP_DATA.sources[c.key]||0 })).sort((a,b) => b.n - a.n)[0];
+  const noClick = Math.max(0, LP_DATA.visits - totalClicks);
+  const sorted = [...rows].sort((a,b) => b.clicks - a.clicks);
 
-  document.getElementById('lp-kpis').innerHTML = [
-    lpKpi('Services LP visits', LP_DATA.visits.toLocaleString(), '/en/services-for-mumz'),
-    lpKpi('Total service clicks', totalClicks.toLocaleString(), 'across ' + rows.length + ' services'),
-    lpKpi('Click-through rate', fmtPct(ctr), 'service clicks ÷ visits'),
-    lpKpi('Top traffic source', topSource.c.label, fmtPct(topSource.n / LP_DATA.visits) + ' of visits'),
-  ].join('');
+  document.getElementById('lp-flow-caption').innerHTML =
+    '<strong>' + LP_DATA.visits.toLocaleString() + '</strong> visits &rarr; <strong>' + totalClicks.toLocaleString() +
+    '</strong> service clicks (<strong>' + fmtPct(ctr) + '</strong> click-through)';
 
-  // Source doughnut
+  // ---- Acquisition flow (Sankey): sources -> LP -> services + drop-off ----
+  destroyChart('lp-sankey-chart');
+  const flow = [];
+  LP_CHANNELS.forEach(c => { const n = LP_DATA.sources[c.key]||0; if (n > 0) flow.push({ from: c.label, to: 'Services landing page', flow: n }); });
+  sorted.forEach(r => { if (r.clicks > 0) flow.push({ from: 'Services landing page', to: r.name, flow: r.clicks }); });
+  if (noClick > 0) flow.push({ from: 'Services landing page', to: 'Left without clicking', flow: noClick });
+  const skctx = document.getElementById('lp-sankey-chart').getContext('2d');
+  chartInstances['lp-sankey-chart'] = new Chart(skctx, {
+    type: 'sankey',
+    data: { datasets: [{
+      data: flow,
+      colorFrom: c => lpNodeColor(flow[c.dataIndex].from),
+      colorTo: c => lpNodeColor(flow[c.dataIndex].to),
+      colorMode: 'gradient',
+      borderWidth: 0,
+      nodeWidth: 14,
+      font: { size: 11, family: getComputedStyle(document.body).fontFamily },
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      onClick: (e, els) => { if (els.length) { const d = flow[els[0].index]; if (d && DATA[d.to]) goToServiceFunnel(d.to); } },
+      onHover: (e, els) => { e.native.target.style.cursor = (els.length && DATA[flow[els[0].index].to]) ? 'pointer' : 'default'; },
+      plugins: { tooltip: { callbacks: { label: ctx => ctx.raw.from + ' → ' + ctx.raw.to + ': ' + ctx.raw.flow.toLocaleString() } } }
+    }
+  });
+
+  // ---- Visit sources (doughnut) ----
   destroyChart('lp-source-chart');
   const sctx = document.getElementById('lp-source-chart').getContext('2d');
   chartInstances['lp-source-chart'] = new Chart(sctx, {
     type: 'doughnut',
     data: { labels: LP_CHANNELS.map(c => c.label), datasets: [{ data: LP_CHANNELS.map(c => LP_DATA.sources[c.key]||0), backgroundColor: LP_CHANNELS.map(c => c.color), borderWidth: 2, borderColor: '#fff' }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + fmtPct(ctx.parsed / LP_DATA.visits) + ')' } } } }
+    options: { responsive: true, maintainAspectRatio: false, cutout: '58%',
+      plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + fmtPct(ctx.parsed / LP_DATA.visits) + ')' } } } }
   });
 
-  // Source legend table
-  document.getElementById('lp-source-legend').innerHTML =
-    '<table class="data-table"><thead><tr><th>Source</th><th class="num">Visits</th><th class="num">Share</th></tr></thead><tbody>' +
-    LP_CHANNELS.map(c => { const n = LP_DATA.sources[c.key]||0; return '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + c.color + ';margin-right:8px;vertical-align:middle;"></span>' + c.label + '</td><td class="num">' + n.toLocaleString() + '</td><td class="num">' + fmtPct(n / LP_DATA.visits) + '</td></tr>'; }).join('') +
-    '</tbody></table>';
+  // ---- Click-through by source: visits vs. clicks per channel ----
+  const clicksByCh = {}; LP_CHANNELS.forEach(c => { clicksByCh[c.key] = rows.reduce((a,r) => a + (r.counts[c.key]||0), 0); });
+  destroyChart('lp-ctr-chart');
+  const cctx = document.getElementById('lp-ctr-chart').getContext('2d');
+  chartInstances['lp-ctr-chart'] = new Chart(cctx, {
+    type: 'bar',
+    data: { labels: LP_CHANNELS.map(c => c.label), datasets: [
+      { label: 'Visits', data: LP_CHANNELS.map(c => LP_DATA.sources[c.key]||0), backgroundColor: '#cbd5e1', borderRadius: 3 },
+      { label: 'Service clicks', data: LP_CHANNELS.map(c => clicksByCh[c.key]||0), backgroundColor: LP_CHANNELS.map(c => c.color), borderRadius: 3 },
+    ]},
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: { x: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, callback: v => fmt(v) } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } } }
+  });
 
-  // Channel legend for the stacked bars
-  document.getElementById('lp-channel-legend').innerHTML =
-    '<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--text-secondary);">' +
-    LP_CHANNELS.map(c => '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + c.color + ';margin-right:5px;vertical-align:middle;"></span>' + c.label + '</span>').join('') +
-    '</div>';
-
-  // Services table (sorted by clicks)
-  const sorted = [...rows].sort((a,b) => b.clicks - a.clicks);
-  const body = sorted.map(r => {
-    const seg = LP_CHANNELS.map(c => { const n = r.counts[c.key]||0; const w = r.clicks ? n / r.clicks * 100 : 0; return w > 0 ? '<div title="' + c.label + ': ' + n.toLocaleString() + ' (' + fmtPct(n / r.clicks) + ')" style="width:' + w + '%;background:' + c.color + ';height:100%;"></div>' : ''; }).join('');
-    const share = totalClicks ? r.clicks / totalClicks : 0;
-    const safeName = r.name.replace(/'/g, "\\'");
-    return '<tr style="cursor:pointer;" onclick="goToServiceFunnel(\'' + safeName + '\')">' +
-      '<td style="font-weight:600;">' + r.name + '</td>' +
-      '<td class="num">' + r.clicks.toLocaleString() + '</td>' +
-      '<td class="num">' + fmtPct(share) + '</td>' +
-      '<td style="min-width:220px;"><div style="display:flex;height:14px;border-radius:4px;overflow:hidden;background:#f1f5f9;">' + seg + '</div></td>' +
-      '<td class="num"><span style="color:var(--accent);font-weight:600;white-space:nowrap;">View funnel →</span></td>' +
-    '</tr>';
-  }).join('');
-  document.getElementById('lp-services-table').innerHTML =
-    '<table class="data-table"><thead><tr><th>Service</th><th class="num">Clicks</th><th class="num">Share</th><th>Source breakdown</th><th></th></tr></thead><tbody>' + body + '</tbody></table>';
+  // ---- Clicks by service & source (stacked horizontal bar, click to open funnel) ----
+  destroyChart('lp-services-chart');
+  const svctx = document.getElementById('lp-services-chart').getContext('2d');
+  chartInstances['lp-services-chart'] = new Chart(svctx, {
+    type: 'bar',
+    data: { labels: sorted.map(r => r.name), datasets: LP_CHANNELS.map(c => ({
+      label: c.label, data: sorted.map(r => r.counts[c.key]||0), backgroundColor: c.color, stack: 'src', borderWidth: 0,
+    })) },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      onClick: (e, els) => { if (els.length) goToServiceFunnel(sorted[els[0].index].name); },
+      onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.x.toLocaleString() } } },
+      scales: { x: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, callback: v => fmt(v) } },
+        y: { stacked: true, grid: { display: false }, ticks: { font: { size: 12 } } } } }
+  });
 }
 
 // Deep-link from a service row into the existing Funnel Analysis tab

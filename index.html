@@ -1242,14 +1242,12 @@ function renderFunnelPyramid(svc, range) {
     const a = aggNannies(range);
     const steps = [
       { label:'Nannies Homepage', event:'page_view · locale roots', users:a.landing, meta:'Locale roots: /en, /en-SA, /ar, /ar-SA' },
-      { label:'Scroll', event:'scroll · enhanced measurement', users:a.scroll, meta:'Users engaging past initial view' },
-      { label:'Nannies CV Viewed', event:'select_item · babysitter_profiles', users:a.cv, meta:'Optional — users can skip to Book Now' },
-      { label:'Book Now', event:'page_view · /booking paths', users:a.book, meta:'Clicked "Book Now" CTA' },
-      { label:'Package Selected', event:'select_item · babysitter_packages', users:a.pkg, meta:'Picked Day/Week/Month duration' },
-      { label:'Address Page', event:'form_start · on /booking', users:a.addr, meta:'Started filling address form' },
-      { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reached Review screen' },
-      { label:'Proceed to Checkout', event:'place_order (batched)', users:a.checkout, meta:'Clicked Place Order — 4 events fire' },
-      { label:'Order Confirmed', event:'Sab\'s backend dashboard ✓', users:a.orders, meta:'Backend; GA4 purchase undercounts ~50%' }
+      { label:'Book Now', event:'page_view · /booking paths', users:a.book, meta:'Clicked "Book Now" CTA, reached booking wizard' },
+      { label:'Package Selected', event:'select_item · babysitter_packages', users:a.pkg, meta:'Picked Day/Week/Month duration on booking page' },
+      { label:'Address Page', event:'form_start · on /booking', users:a.addr, meta:'Started filling address form (booking pages only)' },
+      { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reached Review screen with itemized total' },
+      { label:'Proceed to Checkout', event:'place_order (batched)', users:a.checkout, meta:'Clicked Place Order — 4 events fire together' },
+      { label:'Order Confirmed', event:'Sab\'s backend dashboard ✓', users:a.orders, meta:'Backend truth; GA4 purchase undercounts ~50%' }
     ];
     wrap.innerHTML = renderPyramidLayout(steps);
   } else {
@@ -1349,11 +1347,11 @@ function renderFunnelFindings(svc, range) {
 // === Step-by-Step Event Breakdown ===
 const FUNNEL_STAGES = [
   { stage:'Stage 1 — Landing & Engagement', events:[
-    {e:'page_view', step:'1. Nannies Homepage / page_view'},
+    {e:'page_view', step:'1. Nannies Homepage (locale roots) / 2. Book Now (/booking)'},
     {e:'session_start', step:''},
     {e:'first_visit', step:''},
     {e:'user_engagement', step:''},
-    {e:'scroll', step:'2. Scroll'},
+    {e:'scroll', step:'Scroll (extra context — not in pyramid)'},
     {e:'click', step:''}
   ]},
   { stage:'Stage 2 — Promotion', events:[
@@ -1362,15 +1360,15 @@ const FUNNEL_STAGES = [
   ]},
   { stage:'Stage 3 — Discovery', events:[
     {e:'view_item_list', step:''},
-    {e:'select_item', step:'3. CV Viewed (profiles) / 5. Package Selected (packages)'},
+    {e:'select_item', step:'Nannies CV Viewed (babysitter_profiles, extra) / 3. Package Selected (babysitter_packages)'},
     {e:'view_item_detail', step:''}
   ]},
   { stage:'Stage 4 — Booking Intent', events:[
-    {e:'booking_started', step:'4. Book Now'},
+    {e:'booking_started', step:''},
     {e:'enquiry_started', step:''}
   ]},
   { stage:'Stage 5 — Form', events:[
-    {e:'form_start', step:'6. Address Page'},
+    {e:'form_start', step:'4. Address Page (on /booking paths)'},
     {e:'form_submit', step:''},
     {e:'contact_info_entered', step:''},
     {e:'address_entered', step:''},
@@ -1379,15 +1377,15 @@ const FUNNEL_STAGES = [
   ]},
   { stage:'Stage 6 — Pre-checkout & Checkout', events:[
     {e:'coupon_applied', step:''},
-    {e:'booking_summary_viewed', step:'7. Summary Viewed'},
-    {e:'begin_checkout', step:'8. Proceed to Checkout (batched)'},
-    {e:'add_payment_info', step:'8. Proceed to Checkout (batched)'},
-    {e:'place_order', step:'8. Proceed to Checkout'},
+    {e:'booking_summary_viewed', step:'5. Summary Viewed'},
+    {e:'begin_checkout', step:'6. Proceed to Checkout (batched)'},
+    {e:'add_payment_info', step:'6. Proceed to Checkout (batched)'},
+    {e:'place_order', step:'6. Proceed to Checkout'},
     {e:'checkout_redirect', step:''}
   ]},
   { stage:'Stage 7 — Conversion', events:[
     {e:'service_booking_confirmed', step:''},
-    {e:'purchase', step:'9. Order Confirmed (GA4 — undercounts vs backend)'},
+    {e:'purchase', step:'7. Order Confirmed (GA4 only — undercounts vs backend by ~50%)'},
     {e:'generate_lead', step:''}
   ]}
 ];

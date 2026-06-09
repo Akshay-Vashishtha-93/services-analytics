@@ -213,27 +213,60 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   .uf-counts { grid-column: 2 / 3; text-align: left; }
 }
 
-/* ============ PYRAMID FUNNEL (SVG trapezoids) ============ */
-.f3d-pyramid-wrap { display: grid; grid-template-columns: 260px 640px 280px; gap: 16px; align-items: stretch; margin: 24px auto; max-width: 1240px; }
-.f3d-pyramid-col { display: flex; flex-direction: column; }
-.f3d-pyramid-col.left { text-align: right; padding-right: 8px; }
-.f3d-pyramid-col.right { text-align: left; padding-left: 8px; }
-.f3d-pyramid-row { height: 70px; display: flex; flex-direction: column; justify-content: center; padding: 4px 0; }
-.f3d-pyramid-col.left .step-num { font-size: 12px; color: var(--text-muted); font-weight: 700; line-height: 1; }
-.f3d-pyramid-col.left .step-name { font-size: 15px; font-weight: 800; color: var(--text-primary); line-height: 1.15; margin-top: 3px; }
-.f3d-pyramid-col.left .step-event { font-size: 10.5px; color: var(--text-muted); font-family: ui-monospace, monospace; margin-top: 4px; line-height: 1.2; }
-.f3d-pyramid-col.right .r-users { font-size: 22px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
-.f3d-pyramid-col.right .r-pct { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
-.f3d-pyramid-col.right .r-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.35; }
-.f3d-pyramid-col.right .r-drop { display: inline-block; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-top: 5px; }
-.f3d-pyramid-col.right .r-drop.medium { background: #fef3c7; color: #92400e; }
-.f3d-pyramid-svg { width: 100%; height: auto; display: block; }
-.f3d-pyramid-svg text { fill: #fff; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.35); pointer-events: none; }
-.f3d-pyramid-svg .step-label { font-size: 14px; }
-.f3d-pyramid-svg .step-count { font-size: 11px; font-weight: 600; opacity: 0.92; }
+/* ============ PYRAMID FUNNEL (SVG trapezoids, 3-col grid-locked) ============ */
+.pyr-wrap {
+  display: grid;
+  grid-template-columns: 220px 600px 280px;
+  column-gap: 18px;
+  align-items: stretch;
+  justify-content: center;
+  margin: 24px auto 8px;
+  max-width: 1180px;
+}
+.pyr-side {
+  display: grid;
+  grid-template-rows: repeat(7, 70px); /* must match SVG: 7 layers × 70px = 490px */
+  height: 490px;
+}
+.pyr-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 4px;
+  min-width: 0;
+}
+.pyr-side.left { text-align: right; padding-right: 12px; }
+.pyr-side.right { text-align: left; padding-left: 12px; }
+.pyr-side.left .row-step-num { font-size: 13px; font-weight: 800; color: var(--text-muted); line-height: 1; }
+.pyr-side.left .row-event { font-size: 11px; color: var(--text-secondary); font-family: ui-monospace, monospace; margin-top: 4px; line-height: 1.3; }
+.pyr-side.right .row-users { font-size: 24px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.pyr-side.right .row-pct { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+.pyr-side.right .row-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.35; }
+.pyr-drop {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+.pyr-drop.medium { background: #fef3c7; color: #92400e; }
+.pyr-svg-wrap { height: 490px; }
+.pyr-svg { width: 600px; height: 490px; display: block; }
+.pyr-svg text {
+  fill: #fff;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+}
 
 @media (max-width: 1100px) {
-  .f3d-pyramid-wrap { grid-template-columns: 200px 1fr 220px; gap: 8px; }
+  .pyr-wrap { grid-template-columns: 160px 1fr 220px; column-gap: 8px; }
+  .pyr-svg { width: 100%; }
 }
 
 /* Backend truth callout */
@@ -364,129 +397,95 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <div class="uf-stat good"><div class="label">Order Confirmed (Paid)</div><div class="value">121</div><div class="sub">end-to-end CVR <strong>0.79%</strong> · AED 111,899</div></div>
   </div>
 
-  <!-- Backend Truth callout -->
-  <div class="backend-truth">
-    <div class="bt-title"><span class="bt-icon">✓</span>Backend Truth — GA4 vs Actual Orders</div>
-    <div class="bt-sub">Sab's order dashboard shows <strong>121 confirmed paid Nannies bookings</strong> in May 12 – Jun 8 generating <strong>AED 111,899</strong>. GA4's <code>purchase</code> event captured only 59 — a 51% undercount caused by the Checkout.com → GA4 Measurement Protocol webhook dropping events.</div>
-    <div class="bt-grid">
-      <div class="bt-stat"><div class="lbl">Actual Orders</div><div class="val">121</div><div class="sub">vs GA4: 59 (51% gap)</div></div>
-      <div class="bt-stat"><div class="lbl">Revenue</div><div class="val">AED 111,899</div><div class="sub">May 12 – Jun 8</div></div>
-      <div class="bt-stat"><div class="lbl">AOV</div><div class="val">AED 925</div><div class="sub">across all packages</div></div>
-      <div class="bt-stat"><div class="lbl">True CVR</div><div class="val">0.79%</div><div class="sub">121 / 15,232 landed</div></div>
-    </div>
-    <div class="bt-gap-row">⚠ <strong>62 confirmed-payment orders are missing from GA4.</strong> Engineering should investigate the server-side Measurement Protocol pipeline (Checkout.com webhook → GA4). All other GA4 funnel steps remain authoritative for behavioural analysis, but for revenue and order counts always use the backend dashboard.</div>
-  </div>
-
-  <!-- The 3D Funnel -->
+  <!-- The Pyramid Funnel -->
   <div class="card">
     <div class="card-title">Nannies User Journey</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Each band represents one step. Width narrows to show conversion drop. Left = step + event. Right = users + context.</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">7 funnel steps. Step name inside each pyramid layer. Left = event source. Right = users, conversion %, and drop-off from previous step. Step 7 from Sab's order dashboard; steps 1-6 from GA4.</div>
 
-    <div class="f3d-pyramid-wrap">
+    <div class="pyr-wrap">
 
-      <!-- LEFT COLUMN: step labels -->
-      <div class="f3d-pyramid-col left">
-        <div class="f3d-pyramid-row"><div class="step-num">1.</div><div class="step-name">Nannies Homepage</div><div class="step-event">page_view · locale roots</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">2.</div><div class="step-name">Book Now</div><div class="step-event">page_view · /booking paths</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">3.</div><div class="step-name">Nannies Package Selected</div><div class="step-event">select_item · babysitter_packages</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">4.</div><div class="step-name">Address Page</div><div class="step-event">form_start · on /booking</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">5.</div><div class="step-name">Booking Summary Review</div><div class="step-event">booking_summary_viewed</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">6.</div><div class="step-name">Proceed to Checkout</div><div class="step-event">place_order (batched)</div></div>
-        <div class="f3d-pyramid-row"><div class="step-num">7.</div><div class="step-name">Order Confirmed (Paid)</div><div class="step-event">Sab's backend ✓</div></div>
+      <!-- LEFT: step number + event tag (no step name — that's inside the pyramid) -->
+      <div class="pyr-side left">
+        <div class="pyr-row"><div class="row-step-num">Step 1</div><div class="row-event">GA4 · page_view<br>locale roots: /en, /ar, /en-SA, /ar-SA</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 2</div><div class="row-event">GA4 · page_view<br>page_path contains /booking</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 3</div><div class="row-event">GA4 · select_item<br>item_list_id = babysitter_packages</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 4</div><div class="row-event">GA4 · form_start<br>filtered to /booking paths</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 5</div><div class="row-event">GA4 · booking_summary_viewed</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 6</div><div class="row-event">GA4 · place_order<br>(+ begin_checkout, add_payment_info, form_submit batched)</div></div>
+        <div class="pyr-row"><div class="row-step-num">Step 7</div><div class="row-event">Backend · Sab's order dashboard ✓<br>(GA4 purchase undercounts by 51%)</div></div>
       </div>
 
-      <!-- CENTER: SVG pyramid -->
-      <div class="f3d-pyramid-col">
-        <svg class="f3d-pyramid-svg" viewBox="0 0 600 490" preserveAspectRatio="xMidYMid meet">
+      <!-- CENTER: SVG pyramid with step name inside each layer -->
+      <div class="pyr-svg-wrap">
+        <svg class="pyr-svg" viewBox="0 0 600 490" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <linearGradient id="gradN1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
-            <linearGradient id="gradN2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
-            <linearGradient id="gradN3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
-            <linearGradient id="gradN4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#a16207"/></linearGradient>
-            <linearGradient id="gradN5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
-            <linearGradient id="gradN6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f87171"/><stop offset="1" stop-color="#b91c1c"/></linearGradient>
-            <linearGradient id="gradN7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
+            <linearGradient id="gN1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+            <linearGradient id="gN2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+            <linearGradient id="gN3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
+            <linearGradient id="gN4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#a16207"/></linearGradient>
+            <linearGradient id="gN5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+            <linearGradient id="gN6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f87171"/><stop offset="1" stop-color="#b91c1c"/></linearGradient>
+            <linearGradient id="gN7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
           </defs>
+          <polygon points="0,0 600,0 564,70 36,70" fill="url(#gN1)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="42" text-anchor="middle" font-size="18">Nannies Homepage</text>
 
-          <!-- Layer 1 -->
-          <polygon points="0,0 600,0 564,70 36,70" fill="url(#gradN1)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="38" text-anchor="middle" class="step-label">Nannies Homepage</text>
-          <text x="300" y="56" text-anchor="middle" class="step-count">15,232 users</text>
+          <polygon points="36,70 564,70 528,140 72,140" fill="url(#gN2)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="112" text-anchor="middle" font-size="18">Book Now</text>
 
-          <!-- Layer 2 -->
-          <polygon points="36,70 564,70 528,140 72,140" fill="url(#gradN2)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="108" text-anchor="middle" class="step-label">Book Now</text>
-          <text x="300" y="126" text-anchor="middle" class="step-count">4,114 · 27.0%</text>
+          <polygon points="72,140 528,140 492,210 108,210" fill="url(#gN3)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="182" text-anchor="middle" font-size="17">Package Selected</text>
 
-          <!-- Layer 3 -->
-          <polygon points="72,140 528,140 492,210 108,210" fill="url(#gradN3)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="178" text-anchor="middle" class="step-label">Package Selected</text>
-          <text x="300" y="196" text-anchor="middle" class="step-count">2,496 · 16.4%</text>
+          <polygon points="108,210 492,210 458,280 142,280" fill="url(#gN4)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="252" text-anchor="middle" font-size="16">Address Page</text>
 
-          <!-- Layer 4 -->
-          <polygon points="108,210 492,210 458,280 142,280" fill="url(#gradN4)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="248" text-anchor="middle" class="step-label">Address Page</text>
-          <text x="300" y="266" text-anchor="middle" class="step-count">1,184 · 7.8%</text>
+          <polygon points="142,280 458,280 422,350 178,350" fill="url(#gN5)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="322" text-anchor="middle" font-size="15">Summary Review</text>
 
-          <!-- Layer 5 -->
-          <polygon points="142,280 458,280 422,350 178,350" fill="url(#gradN5)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="318" text-anchor="middle" class="step-label">Summary Review</text>
-          <text x="300" y="336" text-anchor="middle" class="step-count">410 · 2.7%</text>
+          <polygon points="178,350 422,350 386,420 214,420" fill="url(#gN6)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="392" text-anchor="middle" font-size="13">Proceed to Checkout</text>
 
-          <!-- Layer 6 -->
-          <polygon points="178,350 422,350 386,420 214,420" fill="url(#gradN6)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="388" text-anchor="middle" class="step-label" style="font-size:13px;">Proceed to Checkout</text>
-          <text x="300" y="406" text-anchor="middle" class="step-count">228 · 1.5%</text>
-
-          <!-- Layer 7 -->
-          <polygon points="214,420 386,420 350,490 250,490" fill="url(#gradN7)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="458" text-anchor="middle" class="step-label" style="font-size:13px;">Order Confirmed</text>
-          <text x="300" y="476" text-anchor="middle" class="step-count">121 · 0.79%</text>
+          <polygon points="214,420 386,420 350,490 250,490" fill="url(#gN7)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="462" text-anchor="middle" font-size="12">Order Confirmed</text>
         </svg>
       </div>
 
-      <!-- RIGHT COLUMN: counts + context -->
-      <div class="f3d-pyramid-col right">
-        <div class="f3d-pyramid-row">
-          <div class="r-users">15,232</div>
-          <div class="r-pct">100% — Landed users</div>
-          <div class="r-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
+      <!-- RIGHT: users + % + drop + brief context -->
+      <div class="pyr-side right">
+        <div class="pyr-row">
+          <div class="row-users">15,232</div>
+          <div class="row-pct">100% landed</div>
+          <div class="row-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users">4,114</div>
-          <div class="r-pct">27.0% of landed</div>
-          <div class="r-meta">Clicked "Book Now" CTA</div>
-          <div class="r-drop">↓ −11,118 (73.0%)</div>
+        <div class="pyr-row">
+          <div class="row-users">4,114</div>
+          <div class="row-pct">27.0% landed <span class="pyr-drop">↓ 73% drop</span></div>
+          <div class="row-meta">Clicked "Book Now" CTA, reached the booking wizard</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users">2,496</div>
-          <div class="r-pct">16.4% of landed</div>
-          <div class="r-meta">Picked duration: Day / Week / Month</div>
-          <div class="r-drop">↓ −1,618 (39.3%)</div>
+        <div class="pyr-row">
+          <div class="row-users">2,496</div>
+          <div class="row-pct">16.4% landed <span class="pyr-drop">↓ 39% drop</span></div>
+          <div class="row-meta">Picked a duration on the booking page</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users">1,184</div>
-          <div class="r-pct">7.8% of landed</div>
-          <div class="r-meta">Form_start on booking pages only</div>
-          <div class="r-drop medium">↓ −1,312 (52.6%)</div>
+        <div class="pyr-row">
+          <div class="row-users">1,184</div>
+          <div class="row-pct">7.8% landed <span class="pyr-drop medium">↓ 53% drop</span></div>
+          <div class="row-meta">Started filling the address form</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users">410</div>
-          <div class="r-pct">2.7% of landed</div>
-          <div class="r-meta">Reached Review screen w/ itemized total</div>
-          <div class="r-drop">↓ −774 (65.4%)</div>
+        <div class="pyr-row">
+          <div class="row-users">410</div>
+          <div class="row-pct">2.7% landed <span class="pyr-drop">↓ 65% drop</span></div>
+          <div class="row-meta">Reached the Review screen w/ itemized total</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users">228</div>
-          <div class="r-pct">1.5% of landed</div>
-          <div class="r-meta">Place Order click — 4 events fire</div>
-          <div class="r-drop medium">↓ −182 (44.4%)</div>
+        <div class="pyr-row">
+          <div class="row-users">228</div>
+          <div class="row-pct">1.5% landed <span class="pyr-drop medium">↓ 44% drop</span></div>
+          <div class="row-meta">Clicked Place Order (4 events fire together)</div>
         </div>
-        <div class="f3d-pyramid-row">
-          <div class="r-users" style="color:#15803d;">121</div>
-          <div class="r-pct" style="color:#15803d;">0.79% end-to-end CVR</div>
-          <div class="r-meta"><strong style="color:#166534;">AED 111,899 · AOV AED 925</strong><br>89 completed · 32 pending</div>
-          <div class="r-drop">↓ −107 (46.9%)</div>
+        <div class="pyr-row">
+          <div class="row-users" style="color:#15803d;">121</div>
+          <div class="row-pct" style="color:#15803d;">0.79% landed <span class="pyr-drop">↓ 47% drop</span></div>
+          <div class="row-meta"><strong style="color:#166534;">AED 111,899 revenue · AOV AED 925</strong> · 89 completed / 32 pending</div>
         </div>
       </div>
 

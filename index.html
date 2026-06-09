@@ -310,10 +310,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
       Funnel Analysis
     </a>
-    <a href="#" data-tab="userflow" onclick="switchTab('userflow',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      User Flow Funnel
-    </a>
     <a href="#" data-tab="daily" onclick="switchTab('daily',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Daily Analysis
@@ -344,7 +340,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 <div id="tab-funnel" class="tab-content active">
   <div class="page-header">
     <h1>Funnel Analysis</h1>
-    <p>Visualize user flow through each service's conversion funnel</p>
+    <p>Step-by-step user journey per service. Data from <strong>2026-05-12 onwards</strong> (post SQ5-475 deploy). Counts are sum-of-daily-users (a returning user counts once per day).</p>
   </div>
   <div class="controls">
     <div class="control-group">
@@ -354,219 +350,49 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <div class="control-group">
       <label>Period</label>
       <div class="btn-group" id="funnel-period">
-        <button class="active" onclick="setPeriod(this,'all')">All</button>
-        <button onclick="setPeriod(this,'2026-04')">Apr</button>
+        <button class="active" onclick="setPeriod(this,'all')">All (May 12+)</button>
         <button onclick="setPeriod(this,'2026-05')">May</button>
         <button onclick="setPeriod(this,'2026-06')">Jun</button>
+        <button onclick="setPeriod(this,'custom')">Custom</button>
+      </div>
+    </div>
+    <div class="control-group" id="funnel-custom-range" style="display:none;">
+      <label>Date Range</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="date" id="funnel-start-date" min="2026-05-12" max="2026-06-08" value="2026-05-12" onchange="renderFunnel()">
+        <span style="color:var(--text-muted);">to</span>
+        <input type="date" id="funnel-end-date" min="2026-05-12" max="2026-06-08" value="2026-06-08" onchange="renderFunnel()">
       </div>
     </div>
   </div>
+
+  <div class="uf-summary" id="funnel-top-stats"></div>
+
   <div class="card">
-    <div class="card-title">User Flow Funnel</div>
-    <div id="funnel-viz" style="overflow-x:auto;"></div>
+    <div class="card-title" id="funnel-pyramid-title">User Journey</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;" id="funnel-pyramid-sub">9-step funnel. Step name inside each layer. Left = event source. Right = users, conversion %, and drop-off from previous step.</div>
+    <div id="funnel-pyramid-wrap"></div>
   </div>
-  <div class="card">
-    <div class="card-title">Monthly Funnel Overview</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Key conversion steps by month. Green/red badges show month-over-month change.</div>
-    <div style="overflow-x:auto;" id="simplified-funnel-wrap"></div>
+
+  <div class="card" id="funnel-revenue-card" style="display:none;">
+    <div class="card-title">Revenue & Order Mix (from backend dashboard)</div>
+    <div class="rev-mix-grid" id="funnel-revenue-grid"></div>
   </div>
-  <div id="funnel-metrics" class="metrics-row"></div>
+
+  <div class="card" id="funnel-findings-card">
+    <div class="card-title">Key Findings</div>
+    <div id="funnel-findings"></div>
+  </div>
+
   <div class="card">
-    <div class="card-title">Step-by-Step Breakdown</div>
+    <div class="card-title">Step-by-Step Event Breakdown</div>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">All GA4 events for the selected service + period, in logical funnel order. Step names match the pyramid above where applicable.</p>
     <div style="overflow-x:auto;">
-      <table class="data-table" id="funnel-table">
-        <thead><tr></tr></thead>
-        <tbody></tbody>
+      <table class="data-table">
+        <thead><tr><th>Stage</th><th>Funnel Step (if applicable)</th><th>Event</th><th class="num">Users</th><th class="num">Events</th><th class="num">Events / User</th></tr></thead>
+        <tbody id="funnel-breakdown-tbody"></tbody>
       </table>
     </div>
-  </div>
-</div>
-
-<!-- TAB: USER FLOW FUNNEL -->
-<div id="tab-userflow" class="tab-content">
-  <div class="page-header">
-    <h1>User Flow Funnel — Nannies</h1>
-    <p>Step-by-step user journey on Babysitter/Nannies service. Steps 1-6 from GA4 (event + page_path filters, aggregated by base path so fbclid/utm variants are merged). Step 7 from Sab's order dashboard (backend truth). Data window: <strong>May 12 – Jun 8, 2026</strong>. Counts are sum-of-daily-users (a returning user is counted once per day).</p>
-  </div>
-
-  <!-- Top-line stats -->
-  <div class="uf-summary">
-    <div class="uf-stat"><div class="label">Landed</div><div class="value">35,866</div><div class="sub">88.6% from KSA</div></div>
-    <div class="uf-stat"><div class="label">Book Now</div><div class="value">4,119</div><div class="sub">11.5% of landed</div></div>
-    <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">228</div><div class="sub">0.64% of landed</div></div>
-    <div class="uf-stat good"><div class="label">Order Confirmed (Paid)</div><div class="value">121</div><div class="sub">end-to-end CVR <strong>0.34%</strong> · AED 111,899</div></div>
-  </div>
-
-  <!-- The Pyramid Funnel -->
-  <div class="card">
-    <div class="card-title">Nannies User Journey</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">7 funnel steps. Step name inside each pyramid layer. Left = event source. Right = users, conversion %, and drop-off from previous step. Step 7 from Sab's order dashboard; steps 1-6 from GA4.</div>
-
-    <div class="pyr-wrap">
-
-      <!-- LEFT: step number + event tag (no step name — that's inside the pyramid) -->
-      <div class="pyr-side left">
-        <div class="pyr-row"><div class="row-step-num">Step 1</div><div class="row-event">GA4 · page_view<br>locale roots: /en, /ar, /en-SA, /ar-SA</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 2</div><div class="row-event">GA4 · page_view<br>page_path contains /booking</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 3</div><div class="row-event">GA4 · select_item<br>item_list_id = babysitter_packages</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 4</div><div class="row-event">GA4 · form_start<br>filtered to /booking paths</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 5</div><div class="row-event">GA4 · booking_summary_viewed</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 6</div><div class="row-event">GA4 · place_order<br>(+ begin_checkout, add_payment_info, form_submit batched)</div></div>
-        <div class="pyr-row"><div class="row-step-num">Step 7</div><div class="row-event">Backend · Sab's order dashboard ✓<br>(GA4 purchase undercounts by 51%)</div></div>
-      </div>
-
-      <!-- CENTER: SVG pyramid with step name inside each layer -->
-      <div class="pyr-svg-wrap">
-        <svg class="pyr-svg" viewBox="0 0 600 490" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <linearGradient id="gN1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
-            <linearGradient id="gN2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
-            <linearGradient id="gN3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
-            <linearGradient id="gN4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#a16207"/></linearGradient>
-            <linearGradient id="gN5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
-            <linearGradient id="gN6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f87171"/><stop offset="1" stop-color="#b91c1c"/></linearGradient>
-            <linearGradient id="gN7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
-          </defs>
-          <polygon points="0,0 600,0 564,70 36,70" fill="url(#gN1)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="42" text-anchor="middle" font-size="18">Nannies Homepage</text>
-
-          <polygon points="36,70 564,70 528,140 72,140" fill="url(#gN2)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="112" text-anchor="middle" font-size="18">Book Now</text>
-
-          <polygon points="72,140 528,140 492,210 108,210" fill="url(#gN3)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="182" text-anchor="middle" font-size="17">Package Selected</text>
-
-          <polygon points="108,210 492,210 458,280 142,280" fill="url(#gN4)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="252" text-anchor="middle" font-size="16">Address Page</text>
-
-          <polygon points="142,280 458,280 422,350 178,350" fill="url(#gN5)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="322" text-anchor="middle" font-size="15">Summary Review</text>
-
-          <polygon points="178,350 422,350 386,420 214,420" fill="url(#gN6)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="392" text-anchor="middle" font-size="13">Proceed to Checkout</text>
-
-          <polygon points="214,420 386,420 350,490 250,490" fill="url(#gN7)" stroke="#fff" stroke-width="1.5"/>
-          <text x="300" y="462" text-anchor="middle" font-size="12">Order Confirmed</text>
-        </svg>
-      </div>
-
-      <!-- RIGHT: users + % + drop + brief context -->
-      <div class="pyr-side right">
-        <div class="pyr-row">
-          <div class="row-users">35,866</div>
-          <div class="row-pct">100% landed</div>
-          <div class="row-meta">/ar-SA 58% · /en-SA 31% · /en 7.5% · /ar 3.8%</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users">4,119</div>
-          <div class="row-pct">11.5% landed <span class="pyr-drop">↓ 88.5% drop</span></div>
-          <div class="row-meta">Clicked "Book Now" CTA, reached the booking wizard</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users">2,496</div>
-          <div class="row-pct">7.0% landed <span class="pyr-drop">↓ 39.4% drop</span></div>
-          <div class="row-meta">Picked a duration on the booking page</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users">1,184</div>
-          <div class="row-pct">3.3% landed <span class="pyr-drop medium">↓ 52.6% drop</span></div>
-          <div class="row-meta">Started filling the address form</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users">410</div>
-          <div class="row-pct">1.14% landed <span class="pyr-drop">↓ 65.4% drop</span></div>
-          <div class="row-meta">Reached the Review screen w/ itemized total</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users">228</div>
-          <div class="row-pct">0.64% landed <span class="pyr-drop medium">↓ 44.4% drop</span></div>
-          <div class="row-meta">Clicked Place Order (4 events fire together)</div>
-        </div>
-        <div class="pyr-row">
-          <div class="row-users" style="color:#15803d;">121</div>
-          <div class="row-pct" style="color:#15803d;">0.34% landed <span class="pyr-drop">↓ 46.9% drop</span></div>
-          <div class="row-meta"><strong style="color:#166534;">AED 111,899 revenue · AOV AED 925</strong> · 89 completed / 32 pending</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Revenue & Mix card -->
-  <div class="card">
-    <div class="card-title">Revenue & Order Mix (May 12 – Jun 8, from backend)</div>
-    <div class="rev-mix-grid">
-
-      <div class="rev-mix-block">
-        <div class="rm-title">Package Mix (Volume vs Revenue)</div>
-        <div class="rm-row"><span class="rm-label">Daily Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:83%"></div></div><span class="rm-val">100 · AED 32,155</span></div>
-        <div class="rm-row"><span class="rm-label">Weekly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:10%"></div></div><span class="rm-val">12 · AED 34,403</span></div>
-        <div class="rm-row"><span class="rm-label">Monthly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:7%"></div></div><span class="rm-val">9 · AED 45,341</span></div>
-        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Insight: <strong>Monthly = 7% of orders but 40% of revenue.</strong> AOV: Monthly AED 5,038 vs Daily AED 321.</div>
-      </div>
-
-      <div class="rev-mix-block">
-        <div class="rm-title">Country Split</div>
-        <div class="rm-row"><span class="rm-label">🇸🇦 Saudi Arabia</span><div class="rm-bar"><div class="rm-bar-fill" style="width:67%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">81 · 67%</span></div>
-        <div class="rm-row"><span class="rm-label">🇦🇪 United Arab Emirates</span><div class="rm-bar"><div class="rm-bar-fill" style="width:33%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">40 · 33%</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">KSA dominates revenue. Funnel improvements should prioritise KSA-Arabic UX.</div>
-      </div>
-
-      <div class="rev-mix-block">
-        <div class="rm-title">Customer Type</div>
-        <div class="rm-row"><span class="rm-label">New customers</span><div class="rm-bar"><div class="rm-bar-fill" style="width:66%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">80 · 66%</span></div>
-        <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:34%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">41 · 34%</span></div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Healthy mix. Retention loop is working for ~1 in 3 buyers.</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Key findings -->
-  <div class="card">
-    <div class="card-title">Key Findings From This Funnel</div>
-    <div class="uf-finding warn">
-      <strong>GA4 undercounts paid orders by 51% — true CVR is 0.34%, not 0.16% (GA4)</strong>
-      <span>Sab's order dashboard shows 121 confirmed paid bookings vs GA4's 59. The Measurement Protocol webhook from Checkout.com is dropping events. GA4's <code>/success</code> page views are also undercounted (61 vs 121 actual) — same root cause likely. For revenue/order metrics, always trust the backend dashboard.</span>
-    </div>
-    <div class="uf-finding warn">
-      <strong>Nannies Homepage → Book Now: 88.5% drop (31,747 users lost)</strong>
-      <span>Only 11.5% of users who land on the Nannies homepage reach the booking page. This is the single biggest leak in the funnel. Hero clarity, CTA visibility, and pricing transparency are the top suspects. Most landings are KSA-Arabic — localised mobile UX is essential.</span>
-    </div>
-    <div class="uf-finding">
-      <strong>Address Page → Booking Summary Review: 65.4% drop (774 users lost)</strong>
-      <span>Users who started filling the address form rarely reached the Review screen. Likely candidates: address/location entry friction, date picker UX, mandatory fields, or load failures. This is where to invest UX research first after fixing the top-of-funnel drop.</span>
-    </div>
-    <div class="uf-finding warn">
-      <strong>Proceed to Checkout → Order Confirmed: 46.9% drop (107 users lost)</strong>
-      <span>Backend data shows 228 hit Proceed to Checkout, 121 actually paid (47% drop). The real payment-page abandonment is moderate — card declines, Checkout.com bailouts, or 3DS friction. Worth pulling Checkout.com decline reasons.</span>
-    </div>
-    <div class="uf-finding warn">
-      <strong>KSA (Saudi Arabia) is 88.6% of traffic — UAE just 11.4%</strong>
-      <span>/ar-SA (58%) + /en-SA (31%) = 88.6% of all landings come from KSA. Backend confirms KSA drives 67% of paid orders. Funnel optimisation that prioritises English UAE traffic will miss most users. Localised KSA-mobile UX audit is the highest-leverage investment.</span>
-    </div>
-    <div class="uf-finding">
-      <strong>Monthly Nanny: 7% of orders, 40% of revenue</strong>
-      <span>9 Monthly bookings generated AED 45,341 (AOV ~AED 5,038). Daily bookings dominate volume (100 orders) but only AED 32k revenue. A small lift in Monthly-Nanny conversion would move the business needle disproportionately.</span>
-    </div>
-  </div>
-
-  <!-- Data sourcing -->
-  <div class="card">
-    <div class="card-title">How Each Step Is Counted (filters & source)</div>
-    <table class="data-table">
-      <thead><tr><th>Step</th><th>Source / Event</th><th>Filter / Dimension</th><th>Users</th></tr></thead>
-      <tbody>
-        <tr><td>1. Nannies Homepage</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> (base, no query) ∈ {/en, /en-SA, /ar, /ar-SA} — includes fbclid + UTM variants</td><td class="num">35,866</td></tr>
-        <tr><td>2. Book Now</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> (base) ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</td><td class="num">4,119</td></tr>
-        <tr><td>3. Nannies Package Selected</td><td>GA4 · <code>select_item</code></td><td><code>item_list_id = "babysitter_packages"</code> (excludes <code>babysitter_profiles</code>)</td><td class="num">2,496</td></tr>
-        <tr><td>4. Address Page</td><td>GA4 · <code>form_start</code></td><td><code>page_path</code> contains <code>/booking</code> — isolates real booking form_start from GA4 auto enhanced measurement</td><td class="num">1,184</td></tr>
-        <tr><td>5. Booking Summary Review</td><td>GA4 · <code>booking_summary_viewed</code></td><td>No filter (event only fires on Review screen)</td><td class="num">410</td></tr>
-        <tr><td>6. Proceed to Checkout</td><td>GA4 · <code>place_order</code></td><td>No filter. Note: <code>begin_checkout</code>, <code>add_payment_info</code>, <code>form_submit</code> fire identically in the same click</td><td class="num">228</td></tr>
-        <tr style="background:#f0fdf4;"><td><strong>7. Order Confirmed (Paid)</strong></td><td><strong>Sab's order dashboard ✓</strong></td><td>Backend truth: Payment Status = "Payment confirmed" (services-dashboard.mumzdesk.com/raw-data). GA4 <code>purchase</code> shows only 59 + GA4 <code>/success</code> page_views show 61 — both undercount by ~50%.</td><td class="num"><strong>121</strong></td></tr>
-      </tbody>
-    </table>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Steps 1-6 are sum-of-daily-users from GA4 Explore (GA4 deduplicates within each day, so a user returning across multiple days counts more than once — to be flagged when reporting). Step 7 is unique paid orders from the order dashboard. Date window: <strong>2026-05-12 to 2026-06-08</strong>.</div>
   </div>
 </div>
 
@@ -1169,6 +995,8 @@ function setPeriod(btn, p) {
   btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentFunnelPeriod = p;
+  const customRange = document.getElementById('funnel-custom-range');
+  if (customRange) customRange.style.display = (p === 'custom') ? '' : 'none';
   renderFunnel();
 }
 function setGran(btn, g) {
@@ -1294,132 +1122,298 @@ function renderSimplifiedFunnel(svc) {
 function renderFunnel() {
   const svc = document.getElementById('funnel-service').value;
   if (!svc) return;
-  const rows = getServiceData(svc, currentFunnelPeriod);
-  const agg = aggregateByEvent(rows);
-  const svcType = DATA[svc].type;
-  const svcColor = DATA[svc].color;
+  const range = getFunnelDateRange();
+  renderFunnelTopStats(svc, range);
+  renderFunnelPyramid(svc, range);
+  renderFunnelRevenue(svc, range);
+  renderFunnelFindings(svc, range);
+  renderFunnelBreakdown(svc, range);
+}
 
-  // Build ordered steps (only events with users > 0)
-  const steps = FUNNEL_ORDER.filter(e => agg[e] && agg[e].u > 0).map(e => agg[e]);
-  if (steps.length === 0) {
-    document.getElementById('funnel-viz').innerHTML = '<p style="color:var(--text-muted);padding:40px;text-align:center;">No funnel data for this selection.</p>';
-    document.getElementById('funnel-metrics').innerHTML = '';
-    document.querySelector('#funnel-table tbody').innerHTML = '';
+// === Embedded Nannies daily funnel data (May 12 - Jun 8, 2026) ===
+// Keys: l=Landing, s=Scroll, cv=CV viewed (profiles), b=Book Now, pk=Package selected,
+//       ad=Address page (form_start on /booking), sm=Summary viewed, ck=Proceed to checkout (place_order), o=Order confirmed (backend)
+const NANNIES_DAILY = [{"d":"20260512","l":1035,"s":719,"cv":35,"b":153,"pk":31,"ad":34,"sm":9,"ck":6,"o":8},{"d":"20260513","l":1067,"s":730,"cv":84,"b":159,"pk":111,"ad":51,"sm":22,"ck":10,"o":5},{"d":"20260514","l":989,"s":688,"cv":67,"b":134,"pk":91,"ad":34,"sm":14,"ck":6,"o":4},{"d":"20260515","l":1076,"s":716,"cv":74,"b":139,"pk":91,"ad":41,"sm":12,"ck":6,"o":6},{"d":"20260516","l":1178,"s":815,"cv":137,"b":212,"pk":135,"ad":69,"sm":20,"ck":13,"o":5},{"d":"20260517","l":1219,"s":837,"cv":148,"b":202,"pk":122,"ad":52,"sm":15,"ck":9,"o":2},{"d":"20260518","l":1152,"s":799,"cv":112,"b":189,"pk":123,"ad":45,"sm":8,"ck":3,"o":0},{"d":"20260519","l":1394,"s":1048,"cv":125,"b":272,"pk":173,"ad":82,"sm":24,"ck":10,"o":2},{"d":"20260520","l":1083,"s":730,"cv":105,"b":173,"pk":101,"ad":49,"sm":15,"ck":6,"o":1},{"d":"20260521","l":943,"s":619,"cv":60,"b":144,"pk":88,"ad":33,"sm":10,"ck":6,"o":5},{"d":"20260522","l":891,"s":613,"cv":61,"b":138,"pk":89,"ad":56,"sm":19,"ck":12,"o":5},{"d":"20260523","l":889,"s":581,"cv":77,"b":128,"pk":84,"ad":38,"sm":10,"ck":8,"o":5},{"d":"20260524","l":873,"s":566,"cv":56,"b":112,"pk":64,"ad":33,"sm":15,"ck":10,"o":5},{"d":"20260525","l":778,"s":511,"cv":55,"b":125,"pk":73,"ad":38,"sm":11,"ck":5,"o":4},{"d":"20260526","l":697,"s":474,"cv":61,"b":110,"pk":72,"ad":25,"sm":8,"ck":3,"o":2},{"d":"20260527","l":596,"s":387,"cv":38,"b":87,"pk":53,"ad":20,"sm":8,"ck":5,"o":4},{"d":"20260528","l":655,"s":431,"cv":45,"b":99,"pk":53,"ad":24,"sm":8,"ck":8,"o":4},{"d":"20260529","l":662,"s":484,"cv":65,"b":136,"pk":78,"ad":28,"sm":13,"ck":8,"o":4},{"d":"20260530","l":688,"s":496,"cv":68,"b":110,"pk":78,"ad":40,"sm":15,"ck":11,"o":4},{"d":"20260531","l":815,"s":612,"cv":78,"b":131,"pk":89,"ad":41,"sm":12,"ck":4,"o":2},{"d":"20260601","l":802,"s":558,"cv":68,"b":128,"pk":75,"ad":34,"sm":17,"ck":8,"o":4},{"d":"20260602","l":1014,"s":673,"cv":80,"b":137,"pk":80,"ad":42,"sm":18,"ck":12,"o":4},{"d":"20260603","l":2489,"s":1666,"cv":75,"b":159,"pk":106,"ad":66,"sm":29,"ck":14,"o":12},{"d":"20260604","l":2032,"s":1336,"cv":92,"b":143,"pk":85,"ad":32,"sm":15,"ck":9,"o":5},{"d":"20260605","l":2600,"s":1635,"cv":87,"b":140,"pk":93,"ad":53,"sm":18,"ck":8,"o":2},{"d":"20260606","l":3246,"s":2046,"cv":93,"b":156,"pk":89,"ad":50,"sm":17,"ck":8,"o":5},{"d":"20260607","l":2387,"s":1517,"cv":81,"b":156,"pk":92,"ad":40,"sm":16,"ck":11,"o":7},{"d":"20260608","l":2616,"s":1571,"cv":83,"b":147,"pk":77,"ad":34,"sm":12,"ck":9,"o":5}];
+
+// Order-mix (Nannies, period-wide aggregate for now)
+const NANNIES_MIX = {
+  daily: { count: 100, rev: 32155.10 },
+  weekly: { count: 12, rev: 34403.20 },
+  monthly: { count: 9, rev: 45341.10 },
+  ksa: 81, uae: 40, newCust: 80, returning: 41
+};
+
+function getFunnelDateRange() {
+  // Returns ['YYYYMMDD','YYYYMMDD'] inclusive
+  if (currentFunnelPeriod === 'custom') {
+    const s = (document.getElementById('funnel-start-date')||{}).value || '2026-05-12';
+    const e = (document.getElementById('funnel-end-date')||{}).value || '2026-06-08';
+    return [s.replace(/-/g,''), e.replace(/-/g,'')];
+  }
+  if (currentFunnelPeriod === '2026-05') return ['20260512','20260531'];
+  if (currentFunnelPeriod === '2026-06') return ['20260601','20260608'];
+  return ['20260512','20260608']; // all
+}
+
+function aggNannies(range) {
+  const filt = NANNIES_DAILY.filter(d => d.d >= range[0] && d.d <= range[1]);
+  const sum = (k) => filt.reduce((s,d)=>s+(d[k]||0),0);
+  return { landing:sum('l'), scroll:sum('s'), cv:sum('cv'), book:sum('b'),
+           pkg:sum('pk'), addr:sum('ad'), summary:sum('sm'), checkout:sum('ck'), orders:sum('o') };
+}
+
+function aggGeneric(svc, range) {
+  // Aggregates SEED_DATA rows by event for a service over the date range
+  const rows = (SEED_DATA[svc]||{rows:[]}).rows;
+  const sY = range[0], eY = range[1];
+  const sIso = sY.slice(0,4)+'-'+sY.slice(4,6)+'-'+sY.slice(6,8);
+  const eIso = eY.slice(0,4)+'-'+eY.slice(4,6)+'-'+eY.slice(6,8);
+  const out = {};
+  rows.forEach(r => {
+    if (r.d < sIso || r.d > eIso) return;
+    if (!out[r.e]) out[r.e] = { c:0, u:0 };
+    out[r.e].c += r.c||0;
+    out[r.e].u += r.u||0;
+  });
+  return out;
+}
+
+function renderFunnelTopStats(svc, range) {
+  const el = document.getElementById('funnel-top-stats');
+  if (svc === 'Babysitter / Nanny') {
+    const a = aggNannies(range);
+    const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(2) : '0.00';
+    el.innerHTML = `
+      <div class="uf-stat"><div class="label">Landed</div><div class="value">${fmt(a.landing)}</div><div class="sub">Step 1 — page_view</div></div>
+      <div class="uf-stat"><div class="label">Book Now</div><div class="value">${fmt(a.book)}</div><div class="sub">${pctOf(a.book,a.landing)} of landed</div></div>
+      <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">${fmt(a.checkout)}</div><div class="sub">${pctOf(a.checkout,a.landing)} of landed</div></div>
+      <div class="uf-stat good"><div class="label">Order Confirmed</div><div class="value">${fmt(a.orders)}</div><div class="sub">end-to-end CVR <strong>${cvr}%</strong></div></div>`;
+  } else {
+    const ag = aggGeneric(svc, range);
+    const landing = (ag.page_view||{u:0}).u;
+    const intent = (ag.booking_started||ag.enquiry_started||{u:0}).u;
+    const order = (ag.place_order||{u:0}).u;
+    const purchase = (ag.purchase||{u:0}).u;
+    el.innerHTML = `
+      <div class="uf-stat"><div class="label">page_view</div><div class="value">${fmt(landing)}</div><div class="sub">all paths combined</div></div>
+      <div class="uf-stat"><div class="label">Booking/Enquiry started</div><div class="value">${fmt(intent)}</div><div class="sub">${pctOf(intent,landing)} of page_view</div></div>
+      <div class="uf-stat"><div class="label">Place Order</div><div class="value">${fmt(order)}</div><div class="sub">${pctOf(order,landing)}</div></div>
+      <div class="uf-stat good"><div class="label">Purchase (GA4)</div><div class="value">${fmt(purchase)}</div><div class="sub">${pctOf(purchase,landing)}</div></div>`;
+  }
+}
+
+function pctOf(a, b) { return b > 0 ? ((a/b)*100).toFixed(2)+'%' : '—'; }
+
+function buildPyramidSVG(steps) {
+  // steps is array of 9 (or N) values; renders SVG inverted pyramid
+  const N = steps.length;
+  const TOP_W = 600, BOT_W = 100, H = 495;
+  const layerH = H / N;
+  const narrow = (TOP_W - BOT_W) / N;
+  const colors = ['#2563eb','#0891b2','#0d9488','#0f766e','#a16207','#c2410c','#b91c1c','#15803d','#166534'];
+  const lightColors = ['#60a5fa','#22d3ee','#2dd4bf','#14b8a6','#fbbf24','#fb923c','#f87171','#22c55e','#4ade80'];
+  let defs = '<defs>';
+  for (let i=0; i<N; i++) {
+    defs += `<linearGradient id="gFnl${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lightColors[i%lightColors.length]}"/><stop offset="1" stop-color="${colors[i%colors.length]}"/></linearGradient>`;
+  }
+  defs += '</defs>';
+  let polys = '';
+  for (let i=0; i<N; i++) {
+    const tw = TOP_W - narrow*i;
+    const bw = TOP_W - narrow*(i+1);
+    const ty = layerH*i;
+    const by = layerH*(i+1);
+    const tx1 = (TOP_W - tw)/2, tx2 = tx1 + tw;
+    const bx1 = (TOP_W - bw)/2, bx2 = bx1 + bw;
+    const pts = `${tx1.toFixed(0)},${ty.toFixed(0)} ${tx2.toFixed(0)},${ty.toFixed(0)} ${bx2.toFixed(0)},${by.toFixed(0)} ${bx1.toFixed(0)},${by.toFixed(0)}`;
+    const cy = (ty+by)/2 + 5;
+    const fs = N <= 7 ? 16 : (i < 4 ? 16 : i < 7 ? 13 : 11);
+    polys += `<polygon points="${pts}" fill="url(#gFnl${i})" stroke="#fff" stroke-width="1.5"/>`;
+    polys += `<text x="300" y="${cy.toFixed(0)}" text-anchor="middle" font-size="${fs}" fill="#fff" font-weight="800" style="text-shadow:0 1px 2px rgba(0,0,0,0.4);">${steps[i].label}</text>`;
+  }
+  return `<svg class="pyr-svg" viewBox="0 0 ${TOP_W} ${H}" preserveAspectRatio="xMidYMid meet" style="height:${H}px;">${defs}${polys}</svg>`;
+}
+
+function renderFunnelPyramid(svc, range) {
+  const title = document.getElementById('funnel-pyramid-title');
+  const wrap = document.getElementById('funnel-pyramid-wrap');
+  if (svc === 'Babysitter / Nanny') {
+    title.textContent = 'Nannies User Journey';
+    const a = aggNannies(range);
+    const steps = [
+      { label:'Nannies Homepage', event:'page_view · locale roots', users:a.landing, meta:'Locale roots: /en, /en-SA, /ar, /ar-SA' },
+      { label:'Scroll', event:'scroll · enhanced measurement', users:a.scroll, meta:'Users engaging past initial view' },
+      { label:'Nannies CV Viewed', event:'select_item · babysitter_profiles', users:a.cv, meta:'Optional — users can skip to Book Now' },
+      { label:'Book Now', event:'page_view · /booking paths', users:a.book, meta:'Clicked "Book Now" CTA' },
+      { label:'Package Selected', event:'select_item · babysitter_packages', users:a.pkg, meta:'Picked Day/Week/Month duration' },
+      { label:'Address Page', event:'form_start · on /booking', users:a.addr, meta:'Started filling address form' },
+      { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reached Review screen' },
+      { label:'Proceed to Checkout', event:'place_order (batched)', users:a.checkout, meta:'Clicked Place Order — 4 events fire' },
+      { label:'Order Confirmed', event:'Sab\'s backend dashboard ✓', users:a.orders, meta:'Backend; GA4 purchase undercounts ~50%' }
+    ];
+    wrap.innerHTML = renderPyramidLayout(steps);
+  } else {
+    title.textContent = svc + ' — Simplified Funnel';
+    const ag = aggGeneric(svc, range);
+    const steps = [
+      { label:'Page View', event:'page_view (all paths)', users:(ag.page_view||{u:0}).u, meta:'Aggregate (no path filter)' },
+      { label:'Scroll', event:'scroll', users:(ag.scroll||{u:0}).u, meta:'' },
+      { label:'Item Viewed', event:'view_item_list', users:(ag.view_item_list||{u:0}).u, meta:'' },
+      { label:'Item Selected', event:'select_item', users:(ag.select_item||{u:0}).u, meta:'' },
+      { label:'Booking Started', event:'booking_started or enquiry_started', users:Math.max((ag.booking_started||{u:0}).u,(ag.enquiry_started||{u:0}).u), meta:'' },
+      { label:'Form Start', event:'form_start', users:(ag.form_start||{u:0}).u, meta:'' },
+      { label:'Summary Viewed', event:'booking_summary_viewed', users:(ag.booking_summary_viewed||{u:0}).u, meta:'' },
+      { label:'Place Order', event:'place_order', users:(ag.place_order||{u:0}).u, meta:'' },
+      { label:'Purchase', event:'purchase (GA4)', users:(ag.purchase||{u:0}).u, meta:'GA4 only — backend data may differ' }
+    ];
+    wrap.innerHTML = renderPyramidLayout(steps) + '<div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:4px;margin-top:10px;font-size:11.5px;color:#92400e;">⚠ Simplified view: this service does not yet have detailed path/list dimension data. Numbers are aggregate event counts (no path filtering). Full data coming soon.</div>';
+  }
+}
+
+function renderPyramidLayout(steps) {
+  const top = steps[0].users || 1;
+  let leftRows = '';
+  let rightRows = '';
+  steps.forEach((s, i) => {
+    leftRows += `<div class="pyr-row"><div class="row-step-num">Step ${i+1}</div><div class="row-event">${s.event}</div></div>`;
+    const pct = ((s.users/top)*100).toFixed(s.users<top*0.05 ? 2 : 1);
+    const prev = i > 0 ? steps[i-1].users : null;
+    let dropHtml = '';
+    if (prev !== null) {
+      const dropPct = prev > 0 ? ((prev - s.users)/prev*100) : 0;
+      if (dropPct > 0) {
+        const cls = dropPct >= 60 ? '' : (dropPct >= 30 ? ' medium' : ' medium');
+        dropHtml = `<span class="pyr-drop${cls}">↓ ${dropPct.toFixed(1)}% drop</span>`;
+      } else if (dropPct < 0) {
+        dropHtml = `<span class="pyr-drop medium">↑ ${Math.abs(dropPct).toFixed(1)}% (non-sequential)</span>`;
+      }
+    }
+    const color = i === steps.length - 1 ? 'color:#15803d;' : '';
+    rightRows += `<div class="pyr-row">
+      <div class="row-users" style="${color}">${s.users.toLocaleString()}</div>
+      <div class="row-pct" style="${color}">${pct}% landed ${dropHtml}</div>
+      <div class="row-meta">${s.meta||''}</div>
+    </div>`;
+  });
+  return `<div class="pyr-wrap">
+    <div class="pyr-side left">${leftRows}</div>
+    <div class="pyr-svg-wrap">${buildPyramidSVG(steps)}</div>
+    <div class="pyr-side right">${rightRows}</div>
+  </div>`;
+}
+
+function renderFunnelRevenue(svc, range) {
+  const card = document.getElementById('funnel-revenue-card');
+  if (svc !== 'Babysitter / Nanny') { card.style.display = 'none'; return; }
+  // Only show revenue mix when the full window is selected (otherwise mix is irrelevant subset)
+  const [s,e] = range;
+  if (s !== '20260512' || e !== '20260608') { card.style.display = 'none'; return; }
+  card.style.display = '';
+  const grid = document.getElementById('funnel-revenue-grid');
+  const M = NANNIES_MIX;
+  grid.innerHTML = `
+    <div class="rev-mix-block">
+      <div class="rm-title">Package Mix (Vol vs Revenue)</div>
+      <div class="rm-row"><span class="rm-label">Daily Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:83%"></div></div><span class="rm-val">${M.daily.count} · AED ${M.daily.rev.toLocaleString()}</span></div>
+      <div class="rm-row"><span class="rm-label">Weekly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:10%"></div></div><span class="rm-val">${M.weekly.count} · AED ${M.weekly.rev.toLocaleString()}</span></div>
+      <div class="rm-row"><span class="rm-label">Monthly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:7%"></div></div><span class="rm-val">${M.monthly.count} · AED ${M.monthly.rev.toLocaleString()}</span></div>
+      <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Monthly = 7% orders but 40% revenue.</div>
+    </div>
+    <div class="rev-mix-block">
+      <div class="rm-title">Country Split</div>
+      <div class="rm-row"><span class="rm-label">🇸🇦 Saudi Arabia</span><div class="rm-bar"><div class="rm-bar-fill" style="width:67%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${M.ksa} · 67%</span></div>
+      <div class="rm-row"><span class="rm-label">🇦🇪 UAE</span><div class="rm-bar"><div class="rm-bar-fill" style="width:33%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${M.uae} · 33%</span></div>
+    </div>
+    <div class="rev-mix-block">
+      <div class="rm-title">Customer Type</div>
+      <div class="rm-row"><span class="rm-label">New</span><div class="rm-bar"><div class="rm-bar-fill" style="width:66%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${M.newCust} · 66%</span></div>
+      <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:34%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${M.returning} · 34%</span></div>
+    </div>`;
+}
+
+function renderFunnelFindings(svc, range) {
+  const el = document.getElementById('funnel-findings');
+  if (svc !== 'Babysitter / Nanny') {
+    el.innerHTML = '<div style="color:var(--text-muted);padding:8px;font-size:12px;">Detailed findings available once path/list-level data is loaded for this service.</div>';
     return;
   }
+  const a = aggNannies(range);
+  const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(2) : '0.00';
+  const drop12 = a.landing > 0 ? ((a.landing-a.book)/a.landing*100).toFixed(1) : '0.0';
+  el.innerHTML = `
+    <div class="uf-finding warn"><strong>Step 1 → Book Now: ${drop12}% drop</strong><span>${fmt(a.landing-a.book)} users lost between landing and the booking page. This is the biggest leak in the funnel.</span></div>
+    <div class="uf-finding warn"><strong>GA4 undercounts paid orders by ~50%</strong><span>GA4 purchase event captures only about half of the actual paid bookings shown on Sab's backend. For revenue/order metrics use the backend dashboard.</span></div>
+    <div class="uf-finding"><strong>End-to-end CVR: ${cvr}%</strong><span>${a.orders} confirmed orders from ${fmt(a.landing)} landings.</span></div>`;
+}
 
-  const topUsers = steps[0].u;
+// === Step-by-Step Event Breakdown ===
+const FUNNEL_STAGES = [
+  { stage:'Stage 1 — Landing & Engagement', events:[
+    {e:'page_view', step:'1. Nannies Homepage / page_view'},
+    {e:'session_start', step:''},
+    {e:'first_visit', step:''},
+    {e:'user_engagement', step:''},
+    {e:'scroll', step:'2. Scroll'},
+    {e:'click', step:''}
+  ]},
+  { stage:'Stage 2 — Promotion', events:[
+    {e:'view_promotion', step:''},
+    {e:'select_promotion', step:''}
+  ]},
+  { stage:'Stage 3 — Discovery', events:[
+    {e:'view_item_list', step:''},
+    {e:'select_item', step:'3. CV Viewed (profiles) / 5. Package Selected (packages)'},
+    {e:'view_item_detail', step:''}
+  ]},
+  { stage:'Stage 4 — Booking Intent', events:[
+    {e:'booking_started', step:'4. Book Now'},
+    {e:'enquiry_started', step:''}
+  ]},
+  { stage:'Stage 5 — Form', events:[
+    {e:'form_start', step:'6. Address Page'},
+    {e:'form_submit', step:''},
+    {e:'contact_info_entered', step:''},
+    {e:'address_entered', step:''},
+    {e:'wall_measurement_entered', step:''},
+    {e:'additional_wall_added', step:''}
+  ]},
+  { stage:'Stage 6 — Pre-checkout & Checkout', events:[
+    {e:'coupon_applied', step:''},
+    {e:'booking_summary_viewed', step:'7. Summary Viewed'},
+    {e:'begin_checkout', step:'8. Proceed to Checkout (batched)'},
+    {e:'add_payment_info', step:'8. Proceed to Checkout (batched)'},
+    {e:'place_order', step:'8. Proceed to Checkout'},
+    {e:'checkout_redirect', step:''}
+  ]},
+  { stage:'Stage 7 — Conversion', events:[
+    {e:'service_booking_confirmed', step:''},
+    {e:'purchase', step:'9. Order Confirmed (GA4 — undercounts vs backend)'},
+    {e:'generate_lead', step:''}
+  ]}
+];
 
-  // Render Sankey-style funnel
-  let html = '<div style="display:flex;align-items:flex-start;gap:0;padding:24px 0;overflow-x:auto;min-height:280px;">';
-  steps.forEach((step, i) => {
-    const pct = topUsers > 0 ? step.u / topUsers : 0;
-    const barH = Math.max(40, Math.round(pct * 200));
-    const nextStep = steps[i+1];
-    const dropoff = nextStep ? step.u - nextStep.u : 0;
-    const dropPct = step.u > 0 && nextStep ? dropoff / step.u : 0;
-    const hue = i / (steps.length-1||1);
-    const color = steps.length <= 1 ? svcColor : `hsl(${210 + hue*140}, 70%, 50%)`;
-
-    html += `<div style="display:flex;align-items:center;flex-shrink:0;">`;
-    html += `<div style="display:flex;flex-direction:column;align-items:center;min-width:110px;">`;
-    html += `<div style="background:${color};color:#fff;border-radius:8px;padding:10px 12px;text-align:center;box-shadow:var(--shadow);width:110px;">`;
-    html += `<div style="font-size:10px;font-weight:600;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${step.e}">${EVENT_LABELS[step.e]||step.e}</div>`;
-    html += `<div style="font-size:20px;font-weight:700;margin:3px 0;">${fmt(step.u)}</div>`;
-    html += `<div style="font-size:10px;opacity:0.8;">${fmtPct(pct)} of top</div>`;
-    html += `</div>`;
-    if (nextStep && dropoff > 0) {
-      html += `<div class="dropoff-label">&darr; -${fmt(dropoff)} (${fmtPct(dropPct)})</div>`;
-    }
-    html += `</div>`;
-    if (nextStep) {
-      const h1 = Math.max(20, Math.round((step.u / topUsers) * 120));
-      const h2 = Math.max(10, Math.round((nextStep.u / topUsers) * 120));
-      const svgW = 50, svgH = Math.max(h1, h2) + 20;
-      const y1t = (svgH - h1)/2, y1b = y1t + h1;
-      const y2t = (svgH - h2)/2, y2b = y2t + h2;
-      html += `<svg width="${svgW}" height="${svgH}" style="flex-shrink:0;margin:0 -2px;">`;
-      html += `<path d="M0,${y1t} C${svgW/2},${y1t} ${svgW/2},${y2t} ${svgW},${y2t} L${svgW},${y2b} C${svgW/2},${y2b} ${svgW/2},${y1b} 0,${y1b} Z" fill="${color}" opacity="0.25"/>`;
-      html += `</svg>`;
-    }
-    html += `</div>`;
+function renderFunnelBreakdown(svc, range) {
+  const ag = aggGeneric(svc, range);
+  const tbody = document.getElementById('funnel-breakdown-tbody');
+  let html = '';
+  FUNNEL_STAGES.forEach(stg => {
+    const stageRows = stg.events.filter(ev => ag[ev.e] && (ag[ev.e].c > 0 || ag[ev.e].u > 0));
+    if (!stageRows.length) return;
+    stageRows.forEach((ev, idx) => {
+      const d = ag[ev.e];
+      const epu = d.u > 0 ? (d.c/d.u).toFixed(2) : '—';
+      html += `<tr>
+        <td>${idx === 0 ? '<strong>'+stg.stage+'</strong>' : ''}</td>
+        <td>${ev.step || '<span style="color:#94a3b8;">—</span>'}</td>
+        <td><code>${ev.e}</code></td>
+        <td class="num">${d.u.toLocaleString()}</td>
+        <td class="num">${d.c.toLocaleString()}</td>
+        <td class="num">${epu}</td>
+      </tr>`;
+    });
   });
-  html += '</div>';
-  document.getElementById('funnel-viz').innerHTML = html;
-
-  // Derived metrics
-  const sessionUsers = (agg.session_start||{}).u||0;
-  const browseUsers = (agg.view_item_list||{}).u||0;
-  const selectUsers = (agg.select_item||{}).u||0;
-  const bookingStarted = (agg.booking_started||{}).u||0;
-  const enquiryStarted = (agg.enquiry_started||{}).u||0;
-  const intentUsers = bookingStarted + enquiryStarted;
-  const formStart = (agg.form_start||{}).u||0;
-  const placeOrder = (agg.place_order||{}).u||0;
-  const genLead = (agg.generate_lead||{}).u||0;
-  const completionUsers = placeOrder + genLead;
-  const purchaseUsers = (agg.purchase||{}).u||0;
-  const convUsers = purchaseUsers + genLead;
-  const totalRevenue = Object.values(agg).reduce((s,a) => s + a.r, 0);
-  const couponUsers = (agg.coupon_applied||{}).u||0;
-
-  const cvrConfig = getCvrFormula(svc);
-  const cvrNum = (agg[cvrConfig.num]||{}).u||0;
-  const cvrDen = (agg[cvrConfig.den]||{}).u||0;
-  const customCvr = cvrDen > 0 ? cvrNum/cvrDen : 0;
-
-  // Dual CVR calculation
-  const flowConv = getFlowConversions(svc, agg);
-  const flowCvr = sessionUsers > 0 ? flowConv / sessionUsers : 0;
-  const revCvr = sessionUsers > 0 ? purchaseUsers / sessionUsers : 0;
-  const flowConfig = SERVICE_FLOWS[svc] || {};
-  const flowBreakdown = getFlowBreakdown(svc, agg);
-  const flowBreakdownText = flowBreakdown ? ` (Enquiry: ${flowBreakdown.enquiry} via ${flowBreakdown.enquiryEvent}, Booking: ${flowBreakdown.booking} via ${flowBreakdown.bookingEvent})` : '';
-
-  const metrics = [
-    { label:'Sessions', value:fmt(sessionUsers), formula:'session_start users', desc:'Total unique users who started a session. A session begins when a user visits (or returns after 30min idle). This is the top of the funnel.' },
-    { label:'Browse Rate', value:browseUsers&&sessionUsers?fmtPct(browseUsers/sessionUsers):'N/A', formula:'view_item_list / sessions', desc:'% of session users who actually saw the service listings. Low browse rate = users leave before seeing what\'s offered. Target: >10%' },
-    { label:'Listing CTR', value:selectUsers&&browseUsers?fmtPct(selectUsers/browseUsers):'N/A', formula:'select_item / view_item_list', desc:'Click-through rate from listings. Of users who browsed the list, how many clicked on a specific provider/item? Measures listing attractiveness. Target: >30%' },
-    { label:'Intent Rate', value:intentUsers&&selectUsers?fmtPct(intentUsers/selectUsers):'N/A', formula:'(booking + enquiry) / select', desc:'Of users who selected an item, how many clicked Book Now or Send Enquiry? Measures CTA effectiveness. Low = pricing or CTA friction.' },
-    { label:'Form Completion', value:completionUsers&&formStart?fmtPct(completionUsers/formStart):'N/A', formula:'(order + lead) / form_start', desc:'Of users who started filling the form, how many completed it? Measures form UX. Low = form too long, confusing, or payment friction.' },
-    { label:'Flow CVR', value:sessionUsers?fmtPct(flowCvr):'N/A', formula:flowConfig.flowEvent ? flowConfig.flowEvent.replace(/\+/g,' + ')+' / sessions' : 'completion / sessions', desc:'On-site conversion rate. Measures users who completed the WEBSITE flow (form submission, booking confirmed, or lead generated). This is what the website converts — payment may happen later or offline.' + flowBreakdownText },
-    { label:'Revenue CVR', value:purchaseUsers&&sessionUsers?fmtPct(revCvr):'N/A', formula:'purchase / sessions', desc:'Payment conversion rate. Only counts users who completed payment via Checkout.com. For enquiry services this is N/A. Gap between Flow CVR and Revenue CVR = users who complete the flow but pay later (COD, bank transfer, or payment drop-off).' },
-    { label:'Revenue', value:fmtCur(totalRevenue), formula:'Sum of purchase revenue', desc:'Total AED revenue from completed purchases. Only tracked for booking services with Checkout.com payment.' },
-    { label:'AOV', value:purchaseUsers?fmtCur(totalRevenue/purchaseUsers):'N/A', formula:'revenue / purchase users', desc:'Average Order Value. Total revenue divided by number of paying users.' },
-    { label:'Coupon Usage', value:couponUsers&&sessionUsers?fmtPct(couponUsers/sessionUsers):'N/A', formula:'coupon_applied / sessions', desc:'% of session users who applied a coupon code. High coupon usage + low CVR = coupon-dependent but not converting.' },
-  ];
-  document.getElementById('funnel-metrics').innerHTML = metrics.map(m =>
-    `<div class="metric-card"><div class="mc-label">${m.label} <span class="tooltip-wrap"><span class="info-icon">ⓘ</span><span class="tooltip-text">${m.desc || m.formula}</span></span></div><div class="mc-value">${m.value}</div><div class="mc-formula">${m.formula}</div></div>`
-  ).join('');
-
-  // Flow info panel
-  const flowInfo = SERVICE_FLOWS[svc];
-  const flowInfoHtml = flowInfo ? `
-    <div style="margin-top:12px;padding:12px 16px;background:var(--bg);border:1px solid var(--card-border);border-radius:8px;font-size:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-      <div><strong>Flow Type:</strong> <span class="badge" style="background:${flowInfo.hasEnquiry && flowInfo.hasBooking ? '#e0e7ff;color:#3730a3' : flowInfo.hasEnquiry ? '#dbeafe;color:#1e40af' : '#dcfce7;color:#166534'}">${flowInfo.hasEnquiry && flowInfo.hasBooking ? 'Enquiry + Booking' : flowInfo.hasEnquiry ? 'Enquiry Only' : flowInfo.hasBooking ? 'Booking' : 'External'}</span></div>
-      <div><strong>Flow CVR event:</strong> <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">${flowInfo.flowEvent.replace(/\+/g, ' + ')}</code></div>
-      <div><strong>Revenue event:</strong> <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">${flowInfo.revenueEvent || 'N/A (no payment)'}</code></div>
-      ${flowInfo.description ? '<div style="color:var(--text-muted);"><em>' + flowInfo.description + '</em></div>' : ''}
-    </div>` : '';
-  const metricsContainer = document.getElementById('funnel-metrics');
-  metricsContainer.insertAdjacentHTML('afterend', '<div id="flow-info-panel">' + flowInfoHtml + '</div>');
-  // Remove previous flow info if exists
-  const prevFlowInfo = document.querySelectorAll('#flow-info-panel');
-  if (prevFlowInfo.length > 1) prevFlowInfo[0].remove();
-  renderSimplifiedFunnel(svc);
-
-
-  // Step breakdown table
-  const thead = '<tr><th>Step</th><th>Event</th><th>Label</th><th class="num">Events</th><th class="num">Users</th><th class="num">% of Top</th><th class="num">Step Drop</th><th class="num">Revenue</th></tr>';
-  document.querySelector('#funnel-table thead').innerHTML = thead;
-  let tbody = '';
-  steps.forEach((step, i) => {
-    const pctTop = topUsers>0 ? fmtPct(step.u/topUsers) : '-';
-    const prev = i > 0 ? steps[i-1].u : step.u;
-    const drop = prev > 0 ? fmtPct(1 - step.u/prev) : '-';
-    tbody += `<tr><td>${i+1}</td><td><code>${step.e}</code></td><td>${EVENT_LABELS[step.e]||step.e}</td><td class="num">${step.c.toLocaleString()}</td><td class="num">${step.u.toLocaleString()}</td><td class="num">${pctTop}</td><td class="num">${i===0?'-':drop}</td><td class="num">${step.r?fmtCur(step.r):'-'}</td></tr>`;
-  });
-  document.querySelector('#funnel-table tbody').innerHTML = tbody;
+  if (!html) html = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No events in selected period.</td></tr>';
+  tbody.innerHTML = html;
 }
 
 // ====== TAB 2: DAILY ======

@@ -212,6 +212,55 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   .uf-bar-wrap { grid-column: 1 / -1; }
   .uf-counts { grid-column: 2 / 3; text-align: left; }
 }
+
+/* ============ 3D ELLIPSE FUNNEL (image-style) ============ */
+.f3d-wrap { padding: 30px 0 20px; overflow: hidden; }
+.f3d-stack { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 1200px; margin: 0 auto; }
+.f3d-row { display: grid; grid-template-columns: 260px 560px 260px; gap: 0; align-items: center; width: 100%; margin-bottom: -22px; position: relative; }
+.f3d-row:last-of-type { margin-bottom: 0; }
+.f3d-left { text-align: right; padding-right: 16px; }
+.f3d-left .l-num { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+.f3d-left .l-name { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 2px; line-height: 1.2; }
+.f3d-left .l-event { font-size: 10.5px; color: var(--text-muted); font-family: ui-monospace, monospace; margin-top: 3px; }
+.f3d-right { text-align: left; padding-left: 16px; }
+.f3d-right .r-users { font-size: 22px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.f3d-right .r-pct { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
+.f3d-right .r-meta { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+.f3d-ellipse { height: 78px; border-radius: 50% / 50%; margin: 0 auto; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
+.f3d-ellipse::after { content: ''; position: absolute; top: 8%; left: 6%; right: 6%; height: 32%; background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%); border-radius: 50%; pointer-events: none; }
+.f3d-drop-arrow { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); z-index: 2; }
+.f3d-drop-pill { background: #fff; border: 1.5px solid #ef4444; color: #991b1b; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+.f3d-drop-pill.medium { border-color: #f59e0b; color: #92400e; }
+
+/* Backend truth callout */
+.backend-truth { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 18px 22px; margin: 16px 0; box-shadow: 0 2px 6px rgba(34,197,94,0.15); }
+.bt-title { font-size: 15px; font-weight: 800; color: #14532d; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.bt-title .bt-icon { width: 24px; height: 24px; background: #22c55e; color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+.bt-sub { font-size: 12px; color: #15803d; margin-bottom: 12px; line-height: 1.5; }
+.bt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 10px; }
+.bt-stat { background: rgba(255,255,255,0.7); border-radius: 8px; padding: 10px 14px; border: 1px solid rgba(34,197,94,0.25); }
+.bt-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: #15803d; font-weight: 700; }
+.bt-stat .val { font-size: 22px; font-weight: 800; color: #14532d; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.bt-stat .sub { font-size: 11px; color: #15803d; margin-top: 2px; }
+.bt-gap-row { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 4px; margin-top: 12px; font-size: 12.5px; color: #92400e; line-height: 1.5; }
+.bt-gap-row strong { color: #78350f; }
+
+/* Revenue mix card */
+.rev-mix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 6px; }
+.rev-mix-block { background: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px 14px; }
+.rev-mix-block .rm-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); margin-bottom: 8px; }
+.rev-mix-block .rm-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+.rev-mix-block .rm-row:last-child { border-bottom: none; }
+.rev-mix-block .rm-row .rm-label { color: var(--text-primary); font-weight: 500; }
+.rev-mix-block .rm-row .rm-val { font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.rev-mix-block .rm-row .rm-bar { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; margin: 0 10px; overflow: hidden; }
+.rev-mix-block .rm-row .rm-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 3px; }
+
+@media (max-width: 1000px) {
+  .f3d-row { grid-template-columns: 1fr; gap: 6px; margin-bottom: 4px; }
+  .f3d-left, .f3d-right { text-align: center; padding: 0; }
+  .f3d-ellipse { width: 90% !important; }
+}
 </style>
 </head>
 <body>
@@ -300,153 +349,186 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 <div id="tab-userflow" class="tab-content">
   <div class="page-header">
     <h1>User Flow Funnel — Nannies</h1>
-    <p>Step-by-step user journey on Babysitter/Nannies service, filtered to only the events that match each real user action. Data window: <strong>May 12 – Jun 8, 2026</strong> (post SQ5-475 deploy).</p>
+    <p>Step-by-step user journey on Babysitter/Nannies service. Steps 1-6 from GA4 (event-level filters). Step 7 from Sab's order dashboard (backend truth). Data window: <strong>May 12 – Jun 8, 2026</strong>.</p>
   </div>
 
   <!-- Top-line stats -->
   <div class="uf-summary">
     <div class="uf-stat"><div class="label">Landed</div><div class="value">15,232</div><div class="sub">across 4 locales</div></div>
-    <div class="uf-stat"><div class="label">Booking page</div><div class="value">4,114</div><div class="sub">27.0% of landed</div></div>
-    <div class="uf-stat"><div class="label">Place order</div><div class="value">228</div><div class="sub">1.5% of landed</div></div>
-    <div class="uf-stat good"><div class="label">Purchase</div><div class="value">59</div><div class="sub">end-to-end CVR <strong>0.39%</strong></div></div>
+    <div class="uf-stat"><div class="label">Book Now</div><div class="value">4,114</div><div class="sub">27.0% of landed</div></div>
+    <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">228</div><div class="sub">1.5% of landed</div></div>
+    <div class="uf-stat good"><div class="label">Order Confirmed (Paid)</div><div class="value">121</div><div class="sub">end-to-end CVR <strong>0.79%</strong> · AED 111,899</div></div>
   </div>
 
-  <!-- The Funnel -->
+  <!-- Backend Truth callout -->
+  <div class="backend-truth">
+    <div class="bt-title"><span class="bt-icon">✓</span>Backend Truth — GA4 vs Actual Orders</div>
+    <div class="bt-sub">Sab's order dashboard shows <strong>121 confirmed paid Nannies bookings</strong> in May 12 – Jun 8 generating <strong>AED 111,899</strong>. GA4's <code>purchase</code> event captured only 59 — a 51% undercount caused by the Checkout.com → GA4 Measurement Protocol webhook dropping events.</div>
+    <div class="bt-grid">
+      <div class="bt-stat"><div class="lbl">Actual Orders</div><div class="val">121</div><div class="sub">vs GA4: 59 (51% gap)</div></div>
+      <div class="bt-stat"><div class="lbl">Revenue</div><div class="val">AED 111,899</div><div class="sub">May 12 – Jun 8</div></div>
+      <div class="bt-stat"><div class="lbl">AOV</div><div class="val">AED 925</div><div class="sub">across all packages</div></div>
+      <div class="bt-stat"><div class="lbl">True CVR</div><div class="val">0.79%</div><div class="sub">121 / 15,232 landed</div></div>
+    </div>
+    <div class="bt-gap-row">⚠ <strong>62 confirmed-payment orders are missing from GA4.</strong> Engineering should investigate the server-side Measurement Protocol pipeline (Checkout.com webhook → GA4). All other GA4 funnel steps remain authoritative for behavioural analysis, but for revenue and order counts always use the backend dashboard.</div>
+  </div>
+
+  <!-- The 3D Funnel -->
   <div class="card">
-    <div class="card-title">7-Step User Flow</div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Bar width = relative to landed users (Step 1). Drop-off shows users lost between consecutive steps.</div>
+    <div class="card-title">Nannies User Journey</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Each band represents one step. Width narrows to show conversion drop. Left = step + event. Right = users + context.</div>
 
-    <div class="uf-funnel">
+    <div class="f3d-wrap">
+      <div class="f3d-stack">
 
-      <!-- STEP 1 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s1">1</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Landed on Nannies homepage</div>
-            <div class="uf-event-name">page_view · page_path ∈ {/en, /en-SA, /ar, /ar-SA}</div>
-            <div class="uf-trigger">User opens any locale of the Nannies homepage.</div>
+        <!-- STEP 1 — Nannies Homepage -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">1.</div>
+            <div class="l-name">Nannies Homepage</div>
+            <div class="l-event">page_view · locale roots</div>
           </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s1" style="width:100%"></div></div>
-          <div class="uf-counts"><div class="users">15,232</div><div class="pct">100.0%</div></div>
+          <div class="f3d-ellipse" style="width:560px; background:linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">15,232</div>
+            <div class="r-pct">100% — Landed</div>
+            <div class="r-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −11,118 (73.0%)</span></div>
         </div>
-        <div class="uf-locale-row">
-          <div class="uf-locale">🇦🇪 /ar-SA <strong>8,806</strong></div>
-          <div class="uf-locale">🇦🇪 /en <strong>2,697</strong></div>
-          <div class="uf-locale">🇸🇦 /en-SA <strong>2,349</strong></div>
-          <div class="uf-locale">🇸🇦 /ar <strong>1,380</strong></div>
+
+        <!-- STEP 2 — Book Now -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">2.</div>
+            <div class="l-name">Book Now</div>
+            <div class="l-event">page_view · /booking paths</div>
+          </div>
+          <div class="f3d-ellipse" style="width:480px; background:linear-gradient(180deg, #fb923c 0%, #ea580c 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">4,114</div>
+            <div class="r-pct">27.0% of landed</div>
+            <div class="r-meta">Clicked "Book Now" CTA and reached the booking wizard</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −1,618 (39.3%)</span></div>
         </div>
+
+        <!-- STEP 3 — Nannies Package Selected -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">3.</div>
+            <div class="l-name">Nannies Package Selected</div>
+            <div class="l-event">select_item · babysitter_packages</div>
+          </div>
+          <div class="f3d-ellipse" style="width:400px; background:linear-gradient(180deg, #94a3b8 0%, #475569 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">2,496</div>
+            <div class="r-pct">16.4% of landed</div>
+            <div class="r-meta">Picked a duration: Day / Week / Month / Hours</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill medium">↓ −1,312 (52.6%)</span></div>
+        </div>
+
+        <!-- STEP 4 — Address Page -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">4.</div>
+            <div class="l-name">Address Page</div>
+            <div class="l-event">form_start · on /booking</div>
+          </div>
+          <div class="f3d-ellipse" style="width:330px; background:linear-gradient(180deg, #fbbf24 0%, #d97706 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">1,184</div>
+            <div class="r-pct">7.8% of landed</div>
+            <div class="r-meta">Started filling address form (filtered to booking pages only — excludes auto GA4 form_start)</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −774 (65.4%)</span></div>
+        </div>
+
+        <!-- STEP 5 — Booking Summary Review -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">5.</div>
+            <div class="l-name">Booking Summary Review</div>
+            <div class="l-event">booking_summary_viewed</div>
+          </div>
+          <div class="f3d-ellipse" style="width:270px; background:linear-gradient(180deg, #2dd4bf 0%, #0d9488 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">410</div>
+            <div class="r-pct">2.7% of landed</div>
+            <div class="r-meta">Reached the Review screen with itemized booking + total</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill medium">↓ −182 (44.4%)</span></div>
+        </div>
+
+        <!-- STEP 6 — Proceed to Checkout -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">6.</div>
+            <div class="l-name">Proceed to Checkout</div>
+            <div class="l-event">place_order (+ 3 batched events)</div>
+          </div>
+          <div class="f3d-ellipse" style="width:220px; background:linear-gradient(180deg, #f87171 0%, #dc2626 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">228</div>
+            <div class="r-pct">1.5% of landed</div>
+            <div class="r-meta">Clicked Place Order — begin_checkout, add_payment_info, form_submit all fire on this click</div>
+          </div>
+          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −107 (46.9%)</span></div>
+        </div>
+
+        <!-- STEP 7 — Order Confirmed (Paid) -->
+        <div class="f3d-row">
+          <div class="f3d-left">
+            <div class="l-num">7.</div>
+            <div class="l-name">Order Confirmed (Paid)</div>
+            <div class="l-event">Sab's backend dashboard ✓</div>
+          </div>
+          <div class="f3d-ellipse" style="width:180px; background:linear-gradient(180deg, #4ade80 0%, #15803d 100%);"></div>
+          <div class="f3d-right">
+            <div class="r-users">121</div>
+            <div class="r-pct">0.79% end-to-end CVR</div>
+            <div class="r-meta"><strong style="color:#166534;">AED 111,899 revenue · AED 925 AOV</strong><br>89 completed · 32 pending fulfillment</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue & Mix card -->
+  <div class="card">
+    <div class="card-title">Revenue & Order Mix (May 12 – Jun 8, from backend)</div>
+    <div class="rev-mix-grid">
+
+      <div class="rev-mix-block">
+        <div class="rm-title">Package Mix (Volume vs Revenue)</div>
+        <div class="rm-row"><span class="rm-label">Daily Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:83%"></div></div><span class="rm-val">100 · AED 32,155</span></div>
+        <div class="rm-row"><span class="rm-label">Weekly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:10%"></div></div><span class="rm-val">12 · AED 34,403</span></div>
+        <div class="rm-row"><span class="rm-label">Monthly Nanny</span><div class="rm-bar"><div class="rm-bar-fill" style="width:7%"></div></div><span class="rm-val">9 · AED 45,341</span></div>
+        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Insight: <strong>Monthly = 7% of orders but 40% of revenue.</strong> AOV: Monthly AED 5,038 vs Daily AED 321.</div>
       </div>
 
-      <div class="uf-dropoff"><span class="uf-dropoff-pill">↓ −11,118 users dropped (73.0%)</span></div>
-
-      <!-- STEP 2 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s2">2</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Clicked "Book Now" → landed on booking page</div>
-            <div class="uf-event-name">page_view · page_path ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</div>
-            <div class="uf-trigger">User clicked the primary Book Now CTA and reached the booking wizard.</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s2" style="width:27.0%"></div></div>
-          <div class="uf-counts"><div class="users">4,114</div><div class="pct">27.0% of landed</div></div>
-        </div>
-        <div class="uf-locale-row">
-          <div class="uf-locale">🇦🇪 /ar-SA/booking <strong>2,320</strong></div>
-          <div class="uf-locale">🇦🇪 /en/booking <strong>868</strong></div>
-          <div class="uf-locale">🇸🇦 /en-SA/booking <strong>560</strong></div>
-          <div class="uf-locale">🇸🇦 /ar/booking <strong>366</strong></div>
-        </div>
+      <div class="rev-mix-block">
+        <div class="rm-title">Country Split</div>
+        <div class="rm-row"><span class="rm-label">🇸🇦 Saudi Arabia</span><div class="rm-bar"><div class="rm-bar-fill" style="width:67%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">81 · 67%</span></div>
+        <div class="rm-row"><span class="rm-label">🇦🇪 United Arab Emirates</span><div class="rm-bar"><div class="rm-bar-fill" style="width:33%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">40 · 33%</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">KSA dominates revenue. Funnel improvements should prioritise KSA-Arabic UX.</div>
       </div>
 
-      <div class="uf-dropoff"><span class="uf-dropoff-pill">↓ −1,618 users dropped (39.3%)</span></div>
-
-      <!-- STEP 3 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s3">3</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Selected a package</div>
-            <div class="uf-event-name">select_item · item_list_id = "babysitter_packages"</div>
-            <div class="uf-trigger">User picked a duration package on the booking page (Day / Week / Month / Hours).</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s3" style="width:16.4%"></div></div>
-          <div class="uf-counts"><div class="users">2,496</div><div class="pct">16.4% of landed</div></div>
-        </div>
-        <div class="uf-note">⚠ Filtered to <code>babysitter_packages</code> only. The other <code>select_item</code> firing path (<code>babysitter_profiles</code>, 2,210 users) is profile views from the homepage and not part of this funnel.</div>
+      <div class="rev-mix-block">
+        <div class="rm-title">Customer Type</div>
+        <div class="rm-row"><span class="rm-label">New customers</span><div class="rm-bar"><div class="rm-bar-fill" style="width:66%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">80 · 66%</span></div>
+        <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:34%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">41 · 34%</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Healthy mix. Retention loop is working for ~1 in 3 buyers.</div>
       </div>
 
-      <div class="uf-dropoff"><span class="uf-dropoff-pill medium">↓ −1,312 users dropped (52.6%)</span></div>
-
-      <!-- STEP 4 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s4">4</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Started filling booking form (date/time → details)</div>
-            <div class="uf-event-name">form_start · page_path contains "/booking"</div>
-            <div class="uf-trigger">User clicked Proceed from date/time and began entering details on the address step. Filtered to booking-page paths to exclude GA4's auto enhanced-measurement fires from other forms (search, newsletter, etc.).</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s4" style="width:7.8%"></div></div>
-          <div class="uf-counts"><div class="users">1,184</div><div class="pct">7.8% of landed</div></div>
-        </div>
-        <div class="uf-locale-row">
-          <div class="uf-locale">🇦🇪 /ar-SA/booking <strong>611</strong></div>
-          <div class="uf-locale">🇦🇪 /en/booking <strong>283</strong></div>
-          <div class="uf-locale">🇸🇦 /en-SA/booking <strong>197</strong></div>
-          <div class="uf-locale">🇸🇦 /ar/booking <strong>93</strong></div>
-        </div>
-        <div class="uf-note">⚠ Auto GA4 form_start fires on landing page are NOT counted here. This view is filtered to booking pages only, isolating the actual booking-flow form_start.</div>
-      </div>
-
-      <div class="uf-dropoff"><span class="uf-dropoff-pill">↓ −774 users dropped (65.4%)</span></div>
-
-      <!-- STEP 5 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s5">5</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Booking summary viewed (Review page)</div>
-            <div class="uf-event-name">booking_summary_viewed</div>
-            <div class="uf-trigger">User completed the address step and reached the Review screen showing itemized booking + total amount.</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s5" style="width:2.7%"></div></div>
-          <div class="uf-counts"><div class="users">410</div><div class="pct">2.7% of landed</div></div>
-        </div>
-      </div>
-
-      <div class="uf-dropoff"><span class="uf-dropoff-pill medium">↓ −182 users dropped (44.4%)</span></div>
-
-      <!-- STEP 6 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s6">6</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Place Order clicked (payment intent)</div>
-            <div class="uf-event-name">place_order · also fires begin_checkout, add_payment_info, form_submit in the same click</div>
-            <div class="uf-trigger">User clicked the final "Proceed to Payment" / "Place Order" button. All 4 batched events fire at this single click — counts are identical.</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s6" style="width:1.5%"></div></div>
-          <div class="uf-counts"><div class="users">228</div><div class="pct">1.5% of landed</div></div>
-        </div>
-        <div class="uf-note">⚠ <code>begin_checkout</code>, <code>add_payment_info</code>, <code>form_submit</code>, <code>place_order</code> all show 228 users — they fire together on the Place Order click, not at separate UI steps.</div>
-      </div>
-
-      <div class="uf-dropoff"><span class="uf-dropoff-pill">↓ −169 users dropped (74.1%)</span></div>
-
-      <!-- STEP 7 -->
-      <div class="uf-step">
-        <div class="uf-step-row">
-          <div class="uf-num s7">7</div>
-          <div class="uf-info">
-            <div class="uf-step-name">Purchase completed</div>
-            <div class="uf-event-name">purchase · server-side Checkout.com webhook (payment.captured)</div>
-            <div class="uf-trigger">Money actually captured. Authoritative revenue signal from the Checkout.com webhook (independent of browser session).</div>
-          </div>
-          <div class="uf-bar-wrap"><div class="uf-bar s7" style="width:0.4%"></div></div>
-          <div class="uf-counts"><div class="users">59</div><div class="pct">0.39% of landed</div></div>
-        </div>
+      <div class="rev-mix-block">
+        <div class="rm-title">Coupon Usage</div>
+        <div class="rm-row"><span class="rm-label">BS15 (-15%)</span><div class="rm-bar"><div class="rm-bar-fill" style="width:83%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">100 · 83%</span></div>
+        <div class="rm-row"><span class="rm-label">No coupon</span><div class="rm-bar"><div class="rm-bar-fill" style="width:12%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">14 · 12%</span></div>
+        <div class="rm-row"><span class="rm-label">Other (BS10, EXTRA, etc.)</span><div class="rm-bar"><div class="rm-bar-fill" style="width:5%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">7 · 5%</span></div>
+        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">83% of orders use BS15. Promo is doing real work but cannibalising margin on customers who'd convert anyway?</div>
       </div>
 
     </div>
@@ -455,44 +537,52 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   <!-- Key findings -->
   <div class="card">
     <div class="card-title">Key Findings From This Funnel</div>
+    <div class="uf-finding warn">
+      <strong>GA4 undercounts paid orders by 51% — true CVR is 0.79%, not 0.39%</strong>
+      <span>Sab's order dashboard shows 121 confirmed paid bookings vs GA4's 59. The Measurement Protocol webhook from Checkout.com is dropping events. For revenue/order metrics, always trust the backend dashboard over GA4 <code>purchase</code>.</span>
+    </div>
     <div class="uf-finding">
-      <strong>The biggest leak is Step 1 → Step 2 (73% drop, 11,118 users lost)</strong>
+      <strong>Nannies Homepage → Book Now: 73% drop (11,118 users lost)</strong>
       <span>Three-quarters of users who land on the Nannies homepage never reach the booking page. Hero, CTA visibility, and pricing transparency are the top suspects. Mobile vs desktop comparison would help isolate root cause.</span>
     </div>
     <div class="uf-finding">
-      <strong>Step 4 → Step 5 loses 65% (774 users) — form abandonment is the steepest mid-funnel drop</strong>
-      <span>Users who started the booking form rarely reached the Review screen. Likely candidates: address/location entry friction, date picker UX, mandatory fields, or load failures. This is where to invest UX research first.</span>
+      <strong>Address Page → Booking Summary Review: 65% drop (774 users lost)</strong>
+      <span>Users who started filling the address form rarely reached the Review screen. Likely candidates: address/location entry friction, date picker UX, mandatory fields, or load failures. This is where to invest UX research first.</span>
     </div>
     <div class="uf-finding warn">
-      <strong>Step 6 → Step 7 loses 74% (169 users) — payment drop-off is severe</strong>
-      <span>Of 228 users who hit Place Order, only 59 actually paid. The gap = card declines, Checkout.com abandonment, OR the missing <code>checkout_redirect</code> event masking what actually happens. Worth investigating with Checkout.com logs.</span>
+      <strong>Proceed to Checkout → Order Confirmed: 47% drop (107 users lost) — but better than GA4 suggested</strong>
+      <span>Using backend data: 228 hit Proceed to Checkout, 121 actually paid (47% drop). Previously GA4 made this look like 74% drop because of the webhook undercount. The real payment-page abandonment is moderate, not catastrophic.</span>
     </div>
     <div class="uf-finding warn">
       <strong>Arabic UAE (/ar-SA) is the dominant traffic source — 58% of all landings</strong>
-      <span>8,806 of 15,232 landings come from /ar-SA. Funnel optimisation that prioritises English-language UX will miss most users. Localised mobile UX audit recommended.</span>
+      <span>8,806 of 15,232 landings come from /ar-SA. KSA also drives 67% of confirmed paid orders. Funnel optimisation that prioritises English-language UX will miss most users. Localised mobile UX audit recommended.</span>
     </div>
     <div class="uf-finding">
-      <strong>End-to-end conversion: 0.39%</strong>
-      <span>For every 1,000 users landing on Nannies, ~4 complete a paid booking. Industry benchmark for service booking is 1-3%, so there's significant upside if the form-abandonment and payment-drop bugs are fixed.</span>
+      <strong>Monthly Nanny: 7% of orders, 40% of revenue</strong>
+      <span>9 Monthly bookings generated AED 45,341 (AOV ~AED 5,038). Daily bookings dominate volume (100 orders) but only AED 32k revenue. A small lift in Monthly-Nanny conversion would move the business needle disproportionately.</span>
+    </div>
+    <div class="uf-finding">
+      <strong>83% of paid orders used BS15 coupon</strong>
+      <span>100 of 121 confirmed orders applied BS15 (-15%). The promo is doing real work but may also be cannibalising margin on customers who'd convert anyway. Worth testing a holdout to measure incrementality.</span>
     </div>
   </div>
 
   <!-- Data sourcing -->
   <div class="card">
-    <div class="card-title">How Each Step Is Counted (filters used)</div>
+    <div class="card-title">How Each Step Is Counted (filters & source)</div>
     <table class="data-table">
-      <thead><tr><th>Step</th><th>Event</th><th>Filter / Dimension</th><th>Users</th></tr></thead>
+      <thead><tr><th>Step</th><th>Source / Event</th><th>Filter / Dimension</th><th>Users</th></tr></thead>
       <tbody>
-        <tr><td>1. Landed</td><td><code>page_view</code></td><td><code>page_path</code> ∈ {/en, /en-SA, /ar, /ar-SA}</td><td class="num">15,232</td></tr>
-        <tr><td>2. Booking page</td><td><code>page_view</code></td><td><code>page_path</code> ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</td><td class="num">4,114</td></tr>
-        <tr><td>3. Package selected</td><td><code>select_item</code></td><td><code>item_list_id = "babysitter_packages"</code> (excludes <code>babysitter_profiles</code>)</td><td class="num">2,496</td></tr>
-        <tr><td>4. Form start (booking)</td><td><code>form_start</code></td><td><code>page_path</code> contains <code>/booking</code> — isolates real booking form_start from GA4 auto enhanced measurement</td><td class="num">1,184</td></tr>
-        <tr><td>5. Summary viewed</td><td><code>booking_summary_viewed</code></td><td>No filter (event only fires on Review screen)</td><td class="num">410</td></tr>
-        <tr><td>6. Place order</td><td><code>place_order</code></td><td>No filter. Note: <code>begin_checkout</code>, <code>add_payment_info</code>, <code>form_submit</code> fire identically in the same click</td><td class="num">228</td></tr>
-        <tr><td>7. Purchase</td><td><code>purchase</code></td><td>Server-side Checkout.com webhook</td><td class="num">59</td></tr>
+        <tr><td>1. Nannies Homepage</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> ∈ {/en, /en-SA, /ar, /ar-SA}</td><td class="num">15,232</td></tr>
+        <tr><td>2. Book Now</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</td><td class="num">4,114</td></tr>
+        <tr><td>3. Nannies Package Selected</td><td>GA4 · <code>select_item</code></td><td><code>item_list_id = "babysitter_packages"</code> (excludes <code>babysitter_profiles</code>)</td><td class="num">2,496</td></tr>
+        <tr><td>4. Address Page</td><td>GA4 · <code>form_start</code></td><td><code>page_path</code> contains <code>/booking</code> — isolates real booking form_start from GA4 auto enhanced measurement</td><td class="num">1,184</td></tr>
+        <tr><td>5. Booking Summary Review</td><td>GA4 · <code>booking_summary_viewed</code></td><td>No filter (event only fires on Review screen)</td><td class="num">410</td></tr>
+        <tr><td>6. Proceed to Checkout</td><td>GA4 · <code>place_order</code></td><td>No filter. Note: <code>begin_checkout</code>, <code>add_payment_info</code>, <code>form_submit</code> fire identically in the same click</td><td class="num">228</td></tr>
+        <tr style="background:#f0fdf4;"><td><strong>7. Order Confirmed (Paid)</strong></td><td><strong>Sab's order dashboard ✓</strong></td><td>Backend truth: Payment Status = "Payment confirmed" (services-dashboard.mumzdesk.com/raw-data). GA4 <code>purchase</code> shows only 59 — 51% undercount.</td><td class="num"><strong>121</strong></td></tr>
       </tbody>
     </table>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">All counts are sum-of-daily-users for the period (GA4 deduplicates within each day). Date window: <strong>20260512–20260608</strong>.</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Steps 1-6 are sum-of-daily-users from GA4 Explore (deduplicated within each day). Step 7 is unique paid orders from the order dashboard. Date window: <strong>2026-05-12 to 2026-06-08</strong>.</div>
   </div>
 </div>
 

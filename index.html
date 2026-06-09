@@ -213,24 +213,28 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   .uf-counts { grid-column: 2 / 3; text-align: left; }
 }
 
-/* ============ 3D ELLIPSE FUNNEL (image-style) ============ */
-.f3d-wrap { padding: 30px 0 20px; overflow: hidden; }
-.f3d-stack { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 1200px; margin: 0 auto; }
-.f3d-row { display: grid; grid-template-columns: 260px 560px 260px; gap: 0; align-items: center; width: 100%; margin-bottom: -22px; position: relative; }
-.f3d-row:last-of-type { margin-bottom: 0; }
-.f3d-left { text-align: right; padding-right: 16px; }
-.f3d-left .l-num { font-size: 14px; font-weight: 700; color: var(--text-muted); }
-.f3d-left .l-name { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 2px; line-height: 1.2; }
-.f3d-left .l-event { font-size: 10.5px; color: var(--text-muted); font-family: ui-monospace, monospace; margin-top: 3px; }
-.f3d-right { text-align: left; padding-left: 16px; }
-.f3d-right .r-users { font-size: 22px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
-.f3d-right .r-pct { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
-.f3d-right .r-meta { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
-.f3d-ellipse { height: 78px; border-radius: 50% / 50%; margin: 0 auto; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
-.f3d-ellipse::after { content: ''; position: absolute; top: 8%; left: 6%; right: 6%; height: 32%; background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%); border-radius: 50%; pointer-events: none; }
-.f3d-drop-arrow { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); z-index: 2; }
-.f3d-drop-pill { background: #fff; border: 1.5px solid #ef4444; color: #991b1b; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-.f3d-drop-pill.medium { border-color: #f59e0b; color: #92400e; }
+/* ============ PYRAMID FUNNEL (SVG trapezoids) ============ */
+.f3d-pyramid-wrap { display: grid; grid-template-columns: 260px 640px 280px; gap: 16px; align-items: stretch; margin: 24px auto; max-width: 1240px; }
+.f3d-pyramid-col { display: flex; flex-direction: column; }
+.f3d-pyramid-col.left { text-align: right; padding-right: 8px; }
+.f3d-pyramid-col.right { text-align: left; padding-left: 8px; }
+.f3d-pyramid-row { height: 70px; display: flex; flex-direction: column; justify-content: center; padding: 4px 0; }
+.f3d-pyramid-col.left .step-num { font-size: 12px; color: var(--text-muted); font-weight: 700; line-height: 1; }
+.f3d-pyramid-col.left .step-name { font-size: 15px; font-weight: 800; color: var(--text-primary); line-height: 1.15; margin-top: 3px; }
+.f3d-pyramid-col.left .step-event { font-size: 10.5px; color: var(--text-muted); font-family: ui-monospace, monospace; margin-top: 4px; line-height: 1.2; }
+.f3d-pyramid-col.right .r-users { font-size: 22px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.f3d-pyramid-col.right .r-pct { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-weight: 600; }
+.f3d-pyramid-col.right .r-meta { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.35; }
+.f3d-pyramid-col.right .r-drop { display: inline-block; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-top: 5px; }
+.f3d-pyramid-col.right .r-drop.medium { background: #fef3c7; color: #92400e; }
+.f3d-pyramid-svg { width: 100%; height: auto; display: block; }
+.f3d-pyramid-svg text { fill: #fff; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.35); pointer-events: none; }
+.f3d-pyramid-svg .step-label { font-size: 14px; }
+.f3d-pyramid-svg .step-count { font-size: 11px; font-weight: 600; opacity: 0.92; }
+
+@media (max-width: 1100px) {
+  .f3d-pyramid-wrap { grid-template-columns: 200px 1fr 220px; gap: 8px; }
+}
 
 /* Backend truth callout */
 .backend-truth { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 18px 22px; margin: 16px 0; box-shadow: 0 2px 6px rgba(34,197,94,0.15); }
@@ -378,121 +382,114 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <div class="card-title">Nannies User Journey</div>
     <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Each band represents one step. Width narrows to show conversion drop. Left = step + event. Right = users + context.</div>
 
-    <div class="f3d-wrap">
-      <div class="f3d-stack">
+    <div class="f3d-pyramid-wrap">
 
-        <!-- STEP 1 — Nannies Homepage -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">1.</div>
-            <div class="l-name">Nannies Homepage</div>
-            <div class="l-event">page_view · locale roots</div>
-          </div>
-          <div class="f3d-ellipse" style="width:560px; background:linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">15,232</div>
-            <div class="r-pct">100% — Landed</div>
-            <div class="r-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −11,118 (73.0%)</span></div>
-        </div>
-
-        <!-- STEP 2 — Book Now -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">2.</div>
-            <div class="l-name">Book Now</div>
-            <div class="l-event">page_view · /booking paths</div>
-          </div>
-          <div class="f3d-ellipse" style="width:480px; background:linear-gradient(180deg, #fb923c 0%, #ea580c 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">4,114</div>
-            <div class="r-pct">27.0% of landed</div>
-            <div class="r-meta">Clicked "Book Now" CTA and reached the booking wizard</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −1,618 (39.3%)</span></div>
-        </div>
-
-        <!-- STEP 3 — Nannies Package Selected -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">3.</div>
-            <div class="l-name">Nannies Package Selected</div>
-            <div class="l-event">select_item · babysitter_packages</div>
-          </div>
-          <div class="f3d-ellipse" style="width:400px; background:linear-gradient(180deg, #94a3b8 0%, #475569 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">2,496</div>
-            <div class="r-pct">16.4% of landed</div>
-            <div class="r-meta">Picked a duration: Day / Week / Month / Hours</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill medium">↓ −1,312 (52.6%)</span></div>
-        </div>
-
-        <!-- STEP 4 — Address Page -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">4.</div>
-            <div class="l-name">Address Page</div>
-            <div class="l-event">form_start · on /booking</div>
-          </div>
-          <div class="f3d-ellipse" style="width:330px; background:linear-gradient(180deg, #fbbf24 0%, #d97706 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">1,184</div>
-            <div class="r-pct">7.8% of landed</div>
-            <div class="r-meta">Started filling address form (filtered to booking pages only — excludes auto GA4 form_start)</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −774 (65.4%)</span></div>
-        </div>
-
-        <!-- STEP 5 — Booking Summary Review -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">5.</div>
-            <div class="l-name">Booking Summary Review</div>
-            <div class="l-event">booking_summary_viewed</div>
-          </div>
-          <div class="f3d-ellipse" style="width:270px; background:linear-gradient(180deg, #2dd4bf 0%, #0d9488 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">410</div>
-            <div class="r-pct">2.7% of landed</div>
-            <div class="r-meta">Reached the Review screen with itemized booking + total</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill medium">↓ −182 (44.4%)</span></div>
-        </div>
-
-        <!-- STEP 6 — Proceed to Checkout -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">6.</div>
-            <div class="l-name">Proceed to Checkout</div>
-            <div class="l-event">place_order (+ 3 batched events)</div>
-          </div>
-          <div class="f3d-ellipse" style="width:220px; background:linear-gradient(180deg, #f87171 0%, #dc2626 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">228</div>
-            <div class="r-pct">1.5% of landed</div>
-            <div class="r-meta">Clicked Place Order — begin_checkout, add_payment_info, form_submit all fire on this click</div>
-          </div>
-          <div class="f3d-drop-arrow"><span class="f3d-drop-pill">↓ −107 (46.9%)</span></div>
-        </div>
-
-        <!-- STEP 7 — Order Confirmed (Paid) -->
-        <div class="f3d-row">
-          <div class="f3d-left">
-            <div class="l-num">7.</div>
-            <div class="l-name">Order Confirmed (Paid)</div>
-            <div class="l-event">Sab's backend dashboard ✓</div>
-          </div>
-          <div class="f3d-ellipse" style="width:180px; background:linear-gradient(180deg, #4ade80 0%, #15803d 100%);"></div>
-          <div class="f3d-right">
-            <div class="r-users">121</div>
-            <div class="r-pct">0.79% end-to-end CVR</div>
-            <div class="r-meta"><strong style="color:#166534;">AED 111,899 revenue · AED 925 AOV</strong><br>89 completed · 32 pending fulfillment</div>
-          </div>
-        </div>
-
+      <!-- LEFT COLUMN: step labels -->
+      <div class="f3d-pyramid-col left">
+        <div class="f3d-pyramid-row"><div class="step-num">1.</div><div class="step-name">Nannies Homepage</div><div class="step-event">page_view · locale roots</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">2.</div><div class="step-name">Book Now</div><div class="step-event">page_view · /booking paths</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">3.</div><div class="step-name">Nannies Package Selected</div><div class="step-event">select_item · babysitter_packages</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">4.</div><div class="step-name">Address Page</div><div class="step-event">form_start · on /booking</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">5.</div><div class="step-name">Booking Summary Review</div><div class="step-event">booking_summary_viewed</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">6.</div><div class="step-name">Proceed to Checkout</div><div class="step-event">place_order (batched)</div></div>
+        <div class="f3d-pyramid-row"><div class="step-num">7.</div><div class="step-name">Order Confirmed (Paid)</div><div class="step-event">Sab's backend ✓</div></div>
       </div>
+
+      <!-- CENTER: SVG pyramid -->
+      <div class="f3d-pyramid-col">
+        <svg class="f3d-pyramid-svg" viewBox="0 0 600 490" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="gradN1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+            <linearGradient id="gradN2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+            <linearGradient id="gradN3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
+            <linearGradient id="gradN4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#a16207"/></linearGradient>
+            <linearGradient id="gradN5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+            <linearGradient id="gradN6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f87171"/><stop offset="1" stop-color="#b91c1c"/></linearGradient>
+            <linearGradient id="gradN7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#15803d"/></linearGradient>
+          </defs>
+
+          <!-- Layer 1 -->
+          <polygon points="0,0 600,0 564,70 36,70" fill="url(#gradN1)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="38" text-anchor="middle" class="step-label">Nannies Homepage</text>
+          <text x="300" y="56" text-anchor="middle" class="step-count">15,232 users</text>
+
+          <!-- Layer 2 -->
+          <polygon points="36,70 564,70 528,140 72,140" fill="url(#gradN2)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="108" text-anchor="middle" class="step-label">Book Now</text>
+          <text x="300" y="126" text-anchor="middle" class="step-count">4,114 · 27.0%</text>
+
+          <!-- Layer 3 -->
+          <polygon points="72,140 528,140 492,210 108,210" fill="url(#gradN3)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="178" text-anchor="middle" class="step-label">Package Selected</text>
+          <text x="300" y="196" text-anchor="middle" class="step-count">2,496 · 16.4%</text>
+
+          <!-- Layer 4 -->
+          <polygon points="108,210 492,210 458,280 142,280" fill="url(#gradN4)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="248" text-anchor="middle" class="step-label">Address Page</text>
+          <text x="300" y="266" text-anchor="middle" class="step-count">1,184 · 7.8%</text>
+
+          <!-- Layer 5 -->
+          <polygon points="142,280 458,280 422,350 178,350" fill="url(#gradN5)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="318" text-anchor="middle" class="step-label">Summary Review</text>
+          <text x="300" y="336" text-anchor="middle" class="step-count">410 · 2.7%</text>
+
+          <!-- Layer 6 -->
+          <polygon points="178,350 422,350 386,420 214,420" fill="url(#gradN6)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="388" text-anchor="middle" class="step-label" style="font-size:13px;">Proceed to Checkout</text>
+          <text x="300" y="406" text-anchor="middle" class="step-count">228 · 1.5%</text>
+
+          <!-- Layer 7 -->
+          <polygon points="214,420 386,420 350,490 250,490" fill="url(#gradN7)" stroke="#fff" stroke-width="1.5"/>
+          <text x="300" y="458" text-anchor="middle" class="step-label" style="font-size:13px;">Order Confirmed</text>
+          <text x="300" y="476" text-anchor="middle" class="step-count">121 · 0.79%</text>
+        </svg>
+      </div>
+
+      <!-- RIGHT COLUMN: counts + context -->
+      <div class="f3d-pyramid-col right">
+        <div class="f3d-pyramid-row">
+          <div class="r-users">15,232</div>
+          <div class="r-pct">100% — Landed users</div>
+          <div class="r-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users">4,114</div>
+          <div class="r-pct">27.0% of landed</div>
+          <div class="r-meta">Clicked "Book Now" CTA</div>
+          <div class="r-drop">↓ −11,118 (73.0%)</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users">2,496</div>
+          <div class="r-pct">16.4% of landed</div>
+          <div class="r-meta">Picked duration: Day / Week / Month</div>
+          <div class="r-drop">↓ −1,618 (39.3%)</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users">1,184</div>
+          <div class="r-pct">7.8% of landed</div>
+          <div class="r-meta">Form_start on booking pages only</div>
+          <div class="r-drop medium">↓ −1,312 (52.6%)</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users">410</div>
+          <div class="r-pct">2.7% of landed</div>
+          <div class="r-meta">Reached Review screen w/ itemized total</div>
+          <div class="r-drop">↓ −774 (65.4%)</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users">228</div>
+          <div class="r-pct">1.5% of landed</div>
+          <div class="r-meta">Place Order click — 4 events fire</div>
+          <div class="r-drop medium">↓ −182 (44.4%)</div>
+        </div>
+        <div class="f3d-pyramid-row">
+          <div class="r-users" style="color:#15803d;">121</div>
+          <div class="r-pct" style="color:#15803d;">0.79% end-to-end CVR</div>
+          <div class="r-meta"><strong style="color:#166534;">AED 111,899 · AOV AED 925</strong><br>89 completed · 32 pending</div>
+          <div class="r-drop">↓ −107 (46.9%)</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -521,14 +518,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
         <div class="rm-row"><span class="rm-label">New customers</span><div class="rm-bar"><div class="rm-bar-fill" style="width:66%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">80 · 66%</span></div>
         <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:34%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">41 · 34%</span></div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Healthy mix. Retention loop is working for ~1 in 3 buyers.</div>
-      </div>
-
-      <div class="rev-mix-block">
-        <div class="rm-title">Coupon Usage</div>
-        <div class="rm-row"><span class="rm-label">BS15 (-15%)</span><div class="rm-bar"><div class="rm-bar-fill" style="width:83%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">100 · 83%</span></div>
-        <div class="rm-row"><span class="rm-label">No coupon</span><div class="rm-bar"><div class="rm-bar-fill" style="width:12%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">14 · 12%</span></div>
-        <div class="rm-row"><span class="rm-label">Other (BS10, EXTRA, etc.)</span><div class="rm-bar"><div class="rm-bar-fill" style="width:5%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div><span class="rm-val">7 · 5%</span></div>
-        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">83% of orders use BS15. Promo is doing real work but cannibalising margin on customers who'd convert anyway?</div>
       </div>
 
     </div>
@@ -560,10 +549,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <div class="uf-finding">
       <strong>Monthly Nanny: 7% of orders, 40% of revenue</strong>
       <span>9 Monthly bookings generated AED 45,341 (AOV ~AED 5,038). Daily bookings dominate volume (100 orders) but only AED 32k revenue. A small lift in Monthly-Nanny conversion would move the business needle disproportionately.</span>
-    </div>
-    <div class="uf-finding">
-      <strong>83% of paid orders used BS15 coupon</strong>
-      <span>100 of 121 confirmed orders applied BS15 (-15%). The promo is doing real work but may also be cannibalising margin on customers who'd convert anyway. Worth testing a holdout to measure incrementality.</span>
     </div>
   </div>
 

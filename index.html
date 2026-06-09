@@ -386,15 +386,15 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 <div id="tab-userflow" class="tab-content">
   <div class="page-header">
     <h1>User Flow Funnel — Nannies</h1>
-    <p>Step-by-step user journey on Babysitter/Nannies service. Steps 1-6 from GA4 (event-level filters). Step 7 from Sab's order dashboard (backend truth). Data window: <strong>May 12 – Jun 8, 2026</strong>.</p>
+    <p>Step-by-step user journey on Babysitter/Nannies service. Steps 1-6 from GA4 (event + page_path filters, aggregated by base path so fbclid/utm variants are merged). Step 7 from Sab's order dashboard (backend truth). Data window: <strong>May 12 – Jun 8, 2026</strong>. Counts are sum-of-daily-users (a returning user is counted once per day).</p>
   </div>
 
   <!-- Top-line stats -->
   <div class="uf-summary">
-    <div class="uf-stat"><div class="label">Landed</div><div class="value">15,232</div><div class="sub">across 4 locales</div></div>
-    <div class="uf-stat"><div class="label">Book Now</div><div class="value">4,114</div><div class="sub">27.0% of landed</div></div>
-    <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">228</div><div class="sub">1.5% of landed</div></div>
-    <div class="uf-stat good"><div class="label">Order Confirmed (Paid)</div><div class="value">121</div><div class="sub">end-to-end CVR <strong>0.79%</strong> · AED 111,899</div></div>
+    <div class="uf-stat"><div class="label">Landed</div><div class="value">35,866</div><div class="sub">88.6% from KSA</div></div>
+    <div class="uf-stat"><div class="label">Book Now</div><div class="value">4,119</div><div class="sub">11.5% of landed</div></div>
+    <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">228</div><div class="sub">0.64% of landed</div></div>
+    <div class="uf-stat good"><div class="label">Order Confirmed (Paid)</div><div class="value">121</div><div class="sub">end-to-end CVR <strong>0.34%</strong> · AED 111,899</div></div>
   </div>
 
   <!-- The Pyramid Funnel -->
@@ -453,38 +453,38 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
       <!-- RIGHT: users + % + drop + brief context -->
       <div class="pyr-side right">
         <div class="pyr-row">
-          <div class="row-users">15,232</div>
+          <div class="row-users">35,866</div>
           <div class="row-pct">100% landed</div>
-          <div class="row-meta">/ar-SA 58% · /en 18% · /en-SA 15% · /ar 9%</div>
+          <div class="row-meta">/ar-SA 58% · /en-SA 31% · /en 7.5% · /ar 3.8%</div>
         </div>
         <div class="pyr-row">
-          <div class="row-users">4,114</div>
-          <div class="row-pct">27.0% landed <span class="pyr-drop">↓ 73% drop</span></div>
+          <div class="row-users">4,119</div>
+          <div class="row-pct">11.5% landed <span class="pyr-drop">↓ 88.5% drop</span></div>
           <div class="row-meta">Clicked "Book Now" CTA, reached the booking wizard</div>
         </div>
         <div class="pyr-row">
           <div class="row-users">2,496</div>
-          <div class="row-pct">16.4% landed <span class="pyr-drop">↓ 39% drop</span></div>
+          <div class="row-pct">7.0% landed <span class="pyr-drop">↓ 39.4% drop</span></div>
           <div class="row-meta">Picked a duration on the booking page</div>
         </div>
         <div class="pyr-row">
           <div class="row-users">1,184</div>
-          <div class="row-pct">7.8% landed <span class="pyr-drop medium">↓ 53% drop</span></div>
+          <div class="row-pct">3.3% landed <span class="pyr-drop medium">↓ 52.6% drop</span></div>
           <div class="row-meta">Started filling the address form</div>
         </div>
         <div class="pyr-row">
           <div class="row-users">410</div>
-          <div class="row-pct">2.7% landed <span class="pyr-drop">↓ 65% drop</span></div>
+          <div class="row-pct">1.14% landed <span class="pyr-drop">↓ 65.4% drop</span></div>
           <div class="row-meta">Reached the Review screen w/ itemized total</div>
         </div>
         <div class="pyr-row">
           <div class="row-users">228</div>
-          <div class="row-pct">1.5% landed <span class="pyr-drop medium">↓ 44% drop</span></div>
+          <div class="row-pct">0.64% landed <span class="pyr-drop medium">↓ 44.4% drop</span></div>
           <div class="row-meta">Clicked Place Order (4 events fire together)</div>
         </div>
         <div class="pyr-row">
           <div class="row-users" style="color:#15803d;">121</div>
-          <div class="row-pct" style="color:#15803d;">0.79% landed <span class="pyr-drop">↓ 47% drop</span></div>
+          <div class="row-pct" style="color:#15803d;">0.34% landed <span class="pyr-drop">↓ 46.9% drop</span></div>
           <div class="row-meta"><strong style="color:#166534;">AED 111,899 revenue · AOV AED 925</strong> · 89 completed / 32 pending</div>
         </div>
       </div>
@@ -526,24 +526,24 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   <div class="card">
     <div class="card-title">Key Findings From This Funnel</div>
     <div class="uf-finding warn">
-      <strong>GA4 undercounts paid orders by 51% — true CVR is 0.79%, not 0.39%</strong>
-      <span>Sab's order dashboard shows 121 confirmed paid bookings vs GA4's 59. The Measurement Protocol webhook from Checkout.com is dropping events. For revenue/order metrics, always trust the backend dashboard over GA4 <code>purchase</code>.</span>
-    </div>
-    <div class="uf-finding">
-      <strong>Nannies Homepage → Book Now: 73% drop (11,118 users lost)</strong>
-      <span>Three-quarters of users who land on the Nannies homepage never reach the booking page. Hero, CTA visibility, and pricing transparency are the top suspects. Mobile vs desktop comparison would help isolate root cause.</span>
-    </div>
-    <div class="uf-finding">
-      <strong>Address Page → Booking Summary Review: 65% drop (774 users lost)</strong>
-      <span>Users who started filling the address form rarely reached the Review screen. Likely candidates: address/location entry friction, date picker UX, mandatory fields, or load failures. This is where to invest UX research first.</span>
+      <strong>GA4 undercounts paid orders by 51% — true CVR is 0.34%, not 0.16% (GA4)</strong>
+      <span>Sab's order dashboard shows 121 confirmed paid bookings vs GA4's 59. The Measurement Protocol webhook from Checkout.com is dropping events. GA4's <code>/success</code> page views are also undercounted (61 vs 121 actual) — same root cause likely. For revenue/order metrics, always trust the backend dashboard.</span>
     </div>
     <div class="uf-finding warn">
-      <strong>Proceed to Checkout → Order Confirmed: 47% drop (107 users lost) — but better than GA4 suggested</strong>
-      <span>Using backend data: 228 hit Proceed to Checkout, 121 actually paid (47% drop). Previously GA4 made this look like 74% drop because of the webhook undercount. The real payment-page abandonment is moderate, not catastrophic.</span>
+      <strong>Nannies Homepage → Book Now: 88.5% drop (31,747 users lost)</strong>
+      <span>Only 11.5% of users who land on the Nannies homepage reach the booking page. This is the single biggest leak in the funnel. Hero clarity, CTA visibility, and pricing transparency are the top suspects. Most landings are KSA-Arabic — localised mobile UX is essential.</span>
+    </div>
+    <div class="uf-finding">
+      <strong>Address Page → Booking Summary Review: 65.4% drop (774 users lost)</strong>
+      <span>Users who started filling the address form rarely reached the Review screen. Likely candidates: address/location entry friction, date picker UX, mandatory fields, or load failures. This is where to invest UX research first after fixing the top-of-funnel drop.</span>
     </div>
     <div class="uf-finding warn">
-      <strong>Arabic UAE (/ar-SA) is the dominant traffic source — 58% of all landings</strong>
-      <span>8,806 of 15,232 landings come from /ar-SA. KSA also drives 67% of confirmed paid orders. Funnel optimisation that prioritises English-language UX will miss most users. Localised mobile UX audit recommended.</span>
+      <strong>Proceed to Checkout → Order Confirmed: 46.9% drop (107 users lost)</strong>
+      <span>Backend data shows 228 hit Proceed to Checkout, 121 actually paid (47% drop). The real payment-page abandonment is moderate — card declines, Checkout.com bailouts, or 3DS friction. Worth pulling Checkout.com decline reasons.</span>
+    </div>
+    <div class="uf-finding warn">
+      <strong>KSA (Saudi Arabia) is 88.6% of traffic — UAE just 11.4%</strong>
+      <span>/ar-SA (58%) + /en-SA (31%) = 88.6% of all landings come from KSA. Backend confirms KSA drives 67% of paid orders. Funnel optimisation that prioritises English UAE traffic will miss most users. Localised KSA-mobile UX audit is the highest-leverage investment.</span>
     </div>
     <div class="uf-finding">
       <strong>Monthly Nanny: 7% of orders, 40% of revenue</strong>
@@ -557,16 +557,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <table class="data-table">
       <thead><tr><th>Step</th><th>Source / Event</th><th>Filter / Dimension</th><th>Users</th></tr></thead>
       <tbody>
-        <tr><td>1. Nannies Homepage</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> ∈ {/en, /en-SA, /ar, /ar-SA}</td><td class="num">15,232</td></tr>
-        <tr><td>2. Book Now</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</td><td class="num">4,114</td></tr>
+        <tr><td>1. Nannies Homepage</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> (base, no query) ∈ {/en, /en-SA, /ar, /ar-SA} — includes fbclid + UTM variants</td><td class="num">35,866</td></tr>
+        <tr><td>2. Book Now</td><td>GA4 · <code>page_view</code></td><td><code>page_path</code> (base) ∈ {/en/booking, /en-SA/booking, /ar/booking, /ar-SA/booking}</td><td class="num">4,119</td></tr>
         <tr><td>3. Nannies Package Selected</td><td>GA4 · <code>select_item</code></td><td><code>item_list_id = "babysitter_packages"</code> (excludes <code>babysitter_profiles</code>)</td><td class="num">2,496</td></tr>
         <tr><td>4. Address Page</td><td>GA4 · <code>form_start</code></td><td><code>page_path</code> contains <code>/booking</code> — isolates real booking form_start from GA4 auto enhanced measurement</td><td class="num">1,184</td></tr>
         <tr><td>5. Booking Summary Review</td><td>GA4 · <code>booking_summary_viewed</code></td><td>No filter (event only fires on Review screen)</td><td class="num">410</td></tr>
         <tr><td>6. Proceed to Checkout</td><td>GA4 · <code>place_order</code></td><td>No filter. Note: <code>begin_checkout</code>, <code>add_payment_info</code>, <code>form_submit</code> fire identically in the same click</td><td class="num">228</td></tr>
-        <tr style="background:#f0fdf4;"><td><strong>7. Order Confirmed (Paid)</strong></td><td><strong>Sab's order dashboard ✓</strong></td><td>Backend truth: Payment Status = "Payment confirmed" (services-dashboard.mumzdesk.com/raw-data). GA4 <code>purchase</code> shows only 59 — 51% undercount.</td><td class="num"><strong>121</strong></td></tr>
+        <tr style="background:#f0fdf4;"><td><strong>7. Order Confirmed (Paid)</strong></td><td><strong>Sab's order dashboard ✓</strong></td><td>Backend truth: Payment Status = "Payment confirmed" (services-dashboard.mumzdesk.com/raw-data). GA4 <code>purchase</code> shows only 59 + GA4 <code>/success</code> page_views show 61 — both undercount by ~50%.</td><td class="num"><strong>121</strong></td></tr>
       </tbody>
     </table>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Steps 1-6 are sum-of-daily-users from GA4 Explore (deduplicated within each day). Step 7 is unique paid orders from the order dashboard. Date window: <strong>2026-05-12 to 2026-06-08</strong>.</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Steps 1-6 are sum-of-daily-users from GA4 Explore (GA4 deduplicates within each day, so a user returning across multiple days counts more than once — to be flagged when reporting). Step 7 is unique paid orders from the order dashboard. Date window: <strong>2026-05-12 to 2026-06-08</strong>.</div>
   </div>
 </div>
 

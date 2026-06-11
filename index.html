@@ -1209,7 +1209,7 @@ function renderFunnelTopStats(svc, range) {
     el.innerHTML = `
       <div class="uf-stat"><div class="label">Landed</div><div class="value">${fmt(a.landing)}</div><div class="sub">Step 1 — page_view</div></div>
       <div class="uf-stat"><div class="label">Book Now</div><div class="value">${fmt(a.book)}</div><div class="sub">${pctOf(a.book,a.landing)} of landed</div></div>
-      <div class="uf-stat"><div class="label">WhatsApp Clicks</div><div class="value">${fmt(waAll)}</div><div class="sub">${fmt(waTop)} top + ${fmt(waBot)} support</div></div>
+      <div class="uf-stat"><div class="label">WhatsApp Clicks</div><div class="value">${fmt(waAll)}</div><div class="sub">${pctOf(waAll,a.landing)} of landed · ${fmt(waTop)} top + ${fmt(waBot)} support</div></div>
       <div class="uf-stat"><div class="label">Proceed to Checkout</div><div class="value">${fmt(a.checkout)}</div><div class="sub">${pctOf(a.checkout,a.landing)} of landed</div></div>
       <div class="uf-stat good"><div class="label">Order Confirmed</div><div class="value">${fmt(a.orders)}</div><div class="sub">end-to-end CVR <strong>${cvr}%</strong></div></div>`;
   } else {

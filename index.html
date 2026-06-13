@@ -316,13 +316,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
       Funnel Analysis
     </a>
-    <a href="#" data-tab="daily" onclick="switchTab('daily',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Daily Analysis
-    </a>
     <a href="#" data-tab="trends" onclick="switchTab('trends',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Period Compare
+      Daily &amp; Trends
     </a>
     <a href="#" data-tab="allservices" onclick="switchTab('allservices',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -402,81 +398,44 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   </div>
 </div>
 
-<!-- TAB 2: DAILY ANALYSIS -->
-<div id="tab-daily" class="tab-content">
+
+<!-- TAB: DAILY & TRENDS (combined) -->
+<div id="tab-trends" class="tab-content">
   <div class="page-header">
-    <h1>Analysis</h1>
-    <p>Track daily event trends and detect anomalies</p>
+    <h1>Daily &amp; Trends</h1>
+    <p>Daily event volumes + period-over-period metric comparison. Data from <strong>2026-05-12 onwards</strong>. All Funnel-Analysis events (including dimension splits and WhatsApp clicks) are selectable for Nannies.</p>
   </div>
   <div class="controls">
     <div class="control-group">
       <label>Service</label>
-      <select id="daily-service" onchange="renderDaily()"></select>
+      <select id="daily-service" onchange="renderCombined()"></select>
     </div>
     <div class="control-group">
       <label>Granularity</label>
       <div class="btn-group" id="daily-gran">
-        <button class="active" onclick="setDailyGran(this,'daily')">Daily</button>
-        <button onclick="setDailyGran(this,'weekly')">Weekly</button>
-        <button onclick="setDailyGran(this,'monthly')">Monthly</button>
+        <button class="active" onclick="setCombinedGran(this,'daily')">Daily</button>
+        <button onclick="setCombinedGran(this,'weekly')">Weekly</button>
+        <button onclick="setCombinedGran(this,'monthly')">Monthly</button>
       </div>
     </div>
     <div class="control-group" id="daily-date-range-group">
       <label>Date Range</label>
       <div style="display:flex;gap:6px;align-items:center;">
-        <input type="date" id="daily-start" onchange="renderDaily()">
+        <input type="date" id="daily-start" min="2026-05-12" value="2026-05-12" onchange="renderCombined()">
         <span style="color:var(--text-muted);">to</span>
-        <input type="date" id="daily-end" onchange="renderDaily()">
+        <input type="date" id="daily-end" min="2026-05-12" value="2026-06-08" onchange="renderCombined()">
       </div>
     </div>
     <div class="control-group">
-      <label>Events</label>
+      <label>Events (for daily chart)</label>
       <div class="multi-select" id="daily-events-ms">
         <button class="ms-btn" onclick="toggleMsDropdown(this)">Select Events &#9662;</button>
         <div class="ms-dropdown" id="daily-events-dropdown"></div>
       </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-title" id="daily-chart-title">Daily Event Trends</div>
-    <div class="chart-box"><canvas id="daily-chart"></canvas></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Daily Summary</div>
-    <div style="overflow-x:auto;">
-      <table class="data-table" id="daily-table">
-        <thead><tr></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Anomaly Detection <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(>50% deviation from 7-day moving average)</span></div>
-    <div id="anomaly-panel"></div>
-  </div>
-</div>
-
-<!-- TAB 3: TRENDS -->
-<div id="tab-trends" class="tab-content">
-  <div class="page-header">
-    <h1>Trends</h1>
-    <p>Compare two time periods side-by-side. See which funnel steps improved or degraded between periods.</p>
-  </div>
-  <div class="controls">
     <div class="control-group">
-      <label>Service</label>
-      <select id="trends-service" onchange="renderTrends()"></select>
-    </div>
-    <div class="control-group">
-      <label>Granularity</label>
-      <div class="btn-group" id="trends-gran">
-        <button class="active" onclick="setGran(this,'weekly')">Weekly</button>
-        <button onclick="setGran(this,'monthly')">Monthly</button>
-      </div>
-    </div>
-    <div class="control-group">
-      <label>Metric</label>
-      <select id="trends-metric" onchange="renderTrends()">
+      <label>Metric (for trend chart)</label>
+      <select id="trends-metric" onchange="renderCombined()">
         <option value="flow_cvr">Flow CVR</option>
         <option value="rev_cvr">Revenue CVR</option>
         <option value="sessions">Sessions</option>
@@ -489,22 +448,20 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
       </select>
     </div>
   </div>
+
   <div class="card">
-    <div class="card-title">Metric Trend</div>
+    <div class="card-title" id="daily-chart-title">Daily Event Trends</div>
+    <div class="chart-box"><canvas id="daily-chart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Metric Trend (period over period)</div>
     <div class="chart-box"><canvas id="trends-chart"></canvas></div>
   </div>
+
   <div class="card" id="sparklines-section">
     <div class="card-title">All Metrics at a Glance</div>
     <div class="sparkline-row" id="sparkline-row"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Step-by-Step Period Comparison</div>
-    <div style="overflow-x:auto;">
-      <table class="data-table" id="trends-table">
-        <thead><tr></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
   </div>
 </div>
 
@@ -923,7 +880,7 @@ function saveUploadedData() {
 
 function populateDropdowns() {
   const names = Object.keys(DATA).sort();
-  ['funnel-service','daily-service','trends-service'].forEach(id => {
+  ['funnel-service','daily-service'].forEach(id => {
     const el = document.getElementById(id);
     el.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
   });
@@ -944,14 +901,29 @@ function populateDropdowns() {
 
 function updateDailyEvents() {
   const svc = document.getElementById('daily-service').value;
-  if (!svc || !DATA[svc]) return;
-  const events = [...new Set(DATA[svc].rows.map(r => r.e))].sort((a,b) => {
+  if (!svc) return;
+  const rows = getRowsForCharts(svc);
+  if (!rows.length) return;
+  const events = [...new Set(rows.map(r => r.e))].sort((a,b) => {
     const ia = FUNNEL_ORDER.indexOf(a), ib = FUNNEL_ORDER.indexOf(b);
     return (ia===-1?99:ia) - (ib===-1?99:ib);
   });
   const dd = document.getElementById('daily-events-dropdown');
-  const defaults = ['session_start','select_item','booking_started','enquiry_started','purchase','generate_lead','form_start'];
-  dd.innerHTML = events.map(e => `<label><input type="checkbox" value="${e}" ${defaults.includes(e)?'checked':''} onchange="renderDaily()"> ${EVENT_LABELS[e]||e}</label>`).join('');
+  const defaults = ['session_start','select_item','select_item__package','booking_started','purchase','order_confirmed','whatsapp_top','whatsapp_bottom','generate_lead','form_start'];
+  const niceLabels = {
+    page_view__landing: 'page_view (Landing — locale roots)',
+    page_view__booking: 'page_view (Book Now — /booking)',
+    select_item__cv: 'select_item (CV Viewed)',
+    select_item__package: 'select_item (Package Selected)',
+    form_start__booking: 'form_start (on /booking)',
+    order_confirmed: 'Order Confirmed (backend)',
+    whatsapp_top: 'WhatsApp Talk to Us (top)',
+    whatsapp_bottom: 'WhatsApp Support Bottom'
+  };
+  dd.innerHTML = events.map(e => {
+    const lbl = niceLabels[e] || EVENT_LABELS[e] || e;
+    return `<label><input type="checkbox" value="${e}" ${defaults.includes(e)?'checked':''} onchange="renderDaily()"> ${lbl}</label>`;
+  }).join('');
 }
 
 // ====== UTILITY ======
@@ -990,8 +962,7 @@ function switchTab(tab, el) {
   document.getElementById('tab-'+tab).classList.add('active');
   if (el) el.classList.add('active');
   if (tab === 'funnel') renderFunnel();
-  else if (tab === 'daily') { updateDailyEvents(); renderDaily(); }
-  else if (tab === 'trends') renderTrends();
+  else if (tab === 'trends') { updateDailyEvents(); renderDaily(); renderTrends(); }
   else if (tab === 'allservices') renderAllServices();
   else if (tab === 'landingpage') renderLandingPage();
   else if (tab === 'datamanager') renderInventory();
@@ -1004,6 +975,33 @@ function setPeriod(btn, p) {
   const customRange = document.getElementById('funnel-custom-range');
   if (customRange) customRange.style.display = (p === 'custom') ? '' : 'none';
   renderFunnel();
+}
+
+function renderCombined() {
+  updateDailyEvents();
+  renderDaily();
+  renderTrends();
+}
+
+function setCombinedGran(btn, g) {
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentDailyGran = g;
+  currentTrendsGran = g;
+  renderCombined();
+}
+
+// Bridge: returns rows in standard format ({d:'YYYY-MM-DD', e, c, u, r}) for any service.
+// For Nannies, uses NANNIES_EVENTS (which has dimension-split synthetic events + WhatsApp);
+// otherwise SEED_DATA. Used by renderDaily / renderTrends so they share the funnel-tab data source.
+function getRowsForCharts(svc) {
+  if (svc === 'Babysitter / Nanny' && typeof NANNIES_EVENTS !== 'undefined') {
+    return NANNIES_EVENTS.map(r => ({
+      d: r.d.slice(0,4) + '-' + r.d.slice(4,6) + '-' + r.d.slice(6,8),
+      e: r.e, c: r.c, u: r.u, r: 0
+    }));
+  }
+  return (DATA[svc] && DATA[svc].rows) ? DATA[svc].rows.slice() : [];
 }
 function setGran(btn, g) {
   btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -1523,7 +1521,7 @@ function renderDaily() {
   const checkedEvents = [...document.querySelectorAll('#daily-events-dropdown input:checked')].map(i => i.value);
   if (checkedEvents.length === 0) return;
 
-  let rows = DATA[svc].rows.filter(r => (!startDate || r.d >= startDate) && (!endDate || r.d <= endDate));
+  let rows = getRowsForCharts(svc).filter(r => (!startDate || r.d >= startDate) && (!endDate || r.d <= endDate));
   rows = aggregateRowsByGranularity(rows, currentDailyGran);
   const dates = [...new Set(rows.map(r => r.d))].sort();
   const byDateEvent = {};
@@ -1670,11 +1668,11 @@ function toggleMsDropdown(btn) {
 
 // ====== TAB 3: TRENDS ======
 function renderTrends() {
-  const svc = document.getElementById('trends-service').value;
+  const svc = document.getElementById('daily-service').value;
   const metricKey = document.getElementById('trends-metric').value;
-  if (!svc || !DATA[svc]) return;
+  if (!svc) return;
 
-  const rows = DATA[svc].rows;
+  const rows = getRowsForCharts(svc);
   const gran = currentTrendsGran;
 
   // Group by period

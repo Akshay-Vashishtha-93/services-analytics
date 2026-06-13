@@ -1670,13 +1670,14 @@ function toggleMsDropdown(btn) {
 function renderTrends() {
   const svc = document.getElementById('daily-service').value;
   const metricKey = document.getElementById('trends-metric').value;
-  if (!svc) return;
+  if (!svc || !DATA[svc]) return;
 
   const rows = getRowsForCharts(svc);
   const gran = currentTrendsGran;
 
   // Group by period
   function getPeriodKey(date) {
+    if (gran === 'daily') return date; // per-day periods
     if (gran === 'monthly') return date.substring(0,7);
     // Weekly: ISO week start (Monday)
     const d = new Date(date);
@@ -1729,7 +1730,7 @@ function renderTrends() {
   chartInstances['trends-chart'] = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: sortedPeriods.map(p => gran==='monthly' ? p : 'W/'+p.substring(5)),
+      labels: sortedPeriods.map(p => gran==='monthly' ? p : gran==='daily' ? p : 'W/'+p.substring(5)),
       datasets: [{
         label: document.getElementById('trends-metric').selectedOptions[0].text,
         data: values,
@@ -1783,36 +1784,6 @@ function renderTrends() {
     }, 50);
   });
 
-  // Period comparison table (compare adjacent periods)
-  if (sortedPeriods.length >= 2) {
-    const p1 = sortedPeriods[sortedPeriods.length - 2];
-    const p2 = sortedPeriods[sortedPeriods.length - 1];
-    const agg1 = aggregateByEvent(periods[p1]);
-    const agg2 = aggregateByEvent(periods[p2]);
-    const allEvts = FUNNEL_ORDER.filter(e => (agg1[e] && agg1[e].u > 0) || (agg2[e] && agg2[e].u > 0));
-
-    const thead = `<tr><th>Step</th><th class="num">${p1} Users</th><th class="num">${p2} Users</th><th class="num">Change</th><th class="num">${p1} Rate</th><th class="num">${p2} Rate</th><th>Impact</th></tr>`;
-    document.querySelector('#trends-table thead').innerHTML = thead;
-    let tbody = '';
-    const top1 = (agg1.session_start||{}).u||1;
-    const top2 = (agg2.session_start||{}).u||1;
-    allEvts.forEach((e, i) => {
-      const u1 = (agg1[e]||{}).u||0;
-      const u2 = (agg2[e]||{}).u||0;
-      const change = u1 > 0 ? (u2-u1)/u1 : 0;
-      const rate1 = u1/top1;
-      const rate2 = u2/top2;
-      const impact = Math.abs(rate2-rate1);
-      const impactStr = impact > 0.05 ? 'HIGH' : impact > 0.02 ? 'MEDIUM' : 'LOW';
-      const impactClass = impact > 0.05 ? 'cell-red' : impact > 0.02 ? 'cell-yellow' : '';
-      const changeClass = change > 0 ? 'cell-green' : change < -0.1 ? 'cell-red' : '';
-      tbody += `<tr><td>${EVENT_LABELS[e]||e}</td><td class="num">${u1.toLocaleString()}</td><td class="num">${u2.toLocaleString()}</td><td class="num ${changeClass}">${change>=0?'+':''}${fmtPct(change)}</td><td class="num">${fmtPct(rate1)}</td><td class="num">${fmtPct(rate2)}</td><td class="${impactClass}">${impactStr}</td></tr>`;
-    });
-    document.querySelector('#trends-table tbody').innerHTML = tbody;
-  } else {
-    document.querySelector('#trends-table thead').innerHTML = '<tr><td>Need at least 2 periods for comparison.</td></tr>';
-    document.querySelector('#trends-table tbody').innerHTML = '';
-  }
 }
 
 // ====== TAB 4: ALL SERVICES ======

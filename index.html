@@ -409,7 +409,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   <div class="controls">
     <div class="control-group">
       <label>Service</label>
-      <select id="daily-service" onchange="renderCombined()"></select>
+      <select id="daily-service" onchange="onDailyServiceChange()"></select>
     </div>
     <div class="control-group">
       <label>Granularity</label>
@@ -422,9 +422,9 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <div class="control-group" id="daily-date-range-group">
       <label>Date Range</label>
       <div style="display:flex;gap:6px;align-items:center;">
-        <input type="date" id="daily-start" min="2026-05-12" value="2026-05-12" onchange="renderCombined()">
+        <input type="date" id="daily-start" onchange="renderCombined()">
         <span style="color:var(--text-muted);">to</span>
-        <input type="date" id="daily-end" min="2026-05-12" value="2026-06-08" onchange="renderCombined()">
+        <input type="date" id="daily-end" onchange="renderCombined()">
       </div>
     </div>
     <div class="control-group">
@@ -839,6 +839,8 @@ function init() {
   loadCvrConfig();
   const fs = document.getElementById('funnel-service');
   if (fs && fs.value) applyServiceDateRange(fs.value);
+  const ds = document.getElementById('daily-service');
+  if (ds && ds.value) applyDailyServiceDateRange(ds.value);
   renderFunnel();
   renderInventory();
 }
@@ -1198,6 +1200,20 @@ function onFunnelServiceChange() {
   const svc = document.getElementById('funnel-service').value;
   applyServiceDateRange(svc);
   renderFunnel();
+}
+
+function applyDailyServiceDateRange(svc) {
+  const r = getServiceDataRange(svc);
+  const startEl = document.getElementById('daily-start');
+  const endEl = document.getElementById('daily-end');
+  if (startEl) { startEl.min = r.min; startEl.max = r.max; startEl.value = r.min; }
+  if (endEl)   { endEl.min   = r.min; endEl.max   = r.max; endEl.value   = r.max; }
+}
+
+function onDailyServiceChange() {
+  const svc = document.getElementById('daily-service').value;
+  applyDailyServiceDateRange(svc);
+  renderCombined();
 }
 
 function clampStr(s, mn, mx) { return s < mn ? mn : s > mx ? mx : s; }

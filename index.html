@@ -126,11 +126,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .scorecard .sc-label { font-size:12px; color:var(--text-secondary); margin-top:4px; font-weight:500; }
 
 /* Sparklines */
-.sparkline-row { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-bottom:20px; }
-.sparkline-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--card-radius); padding:12px; }
-.sparkline-card .sp-label { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; }
-.sparkline-card .sp-value { font-size:18px; font-weight:700; margin:4px 0; }
-.sparkline-card canvas { width:100% !important; height:40px !important; }
 
 /* Multi-select */
 .multi-select { position:relative; }
@@ -140,11 +135,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
 .multi-select .ms-dropdown label { display:flex; align-items:center; gap:8px; padding:8px 12px; font-size:13px; cursor:pointer; }
 .multi-select .ms-dropdown label:hover { background:#f8fafc; }
 
-/* Custom CVR section */
-.cvr-config { background:#f8fafc; border:1px solid var(--card-border); border-radius:8px; padding:16px; margin-bottom:20px; }
-.cvr-config h4 { font-size:13px; font-weight:600; margin-bottom:8px; }
-.cvr-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; }
-.cvr-row select { height:30px; font-size:12px; padding:0 8px; border:1px solid var(--card-border); border-radius:6px; }
 
 /* Responsive tweaks */
 @media (max-width:1200px) {
@@ -320,10 +310,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Daily &amp; Trends
     </a>
-    <a href="#" data-tab="allservices" onclick="switchTab('allservices',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      All Services
-    </a>
     <a href="#" data-tab="landingpage" onclick="switchTab('landingpage',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       Landing Page view
@@ -434,20 +420,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
         <div class="ms-dropdown" id="daily-events-dropdown"></div>
       </div>
     </div>
-    <div class="control-group">
-      <label>Metric (for trend chart)</label>
-      <select id="trends-metric" onchange="renderCombined()">
-        <option value="flow_cvr">Flow CVR</option>
-        <option value="rev_cvr">Revenue CVR</option>
-        <option value="sessions">Sessions</option>
-        <option value="browse_rate">Browse Rate</option>
-        <option value="ctr">Listing CTR</option>
-        <option value="intent_rate">Intent Rate</option>
-        <option value="form_completion">Form Completion</option>
-        <option value="revenue">Revenue</option>
-        <option value="aov">AOV</option>
-      </select>
-    </div>
   </div>
 
   <div class="card">
@@ -456,71 +428,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
   </div>
 
   <div class="card">
-    <div class="card-title">Metric Trend (period over period)</div>
-    <div class="chart-box"><canvas id="trends-chart"></canvas></div>
-  </div>
-
-  <div class="card" id="sparklines-section">
-    <div class="card-title">All Metrics at a Glance</div>
-    <div class="sparkline-row" id="sparkline-row"></div>
-  </div>
-</div>
-
-<!-- TAB 4: ALL SERVICES -->
-<div id="tab-allservices" class="tab-content">
-  <div class="page-header">
-    <h1>All Services</h1>
-    <p>Cross-service comparison and benchmarking</p>
-  </div>
-  <div class="controls">
-    <div class="control-group">
-      <label>Period</label>
-      <div class="btn-group" id="all-period">
-        <button class="active" onclick="setAllPeriod(this,'all')">All</button>
-        <button onclick="setAllPeriod(this,'2026-04')">Apr</button>
-        <button onclick="setAllPeriod(this,'2026-05')">May</button>
-        <button onclick="setAllPeriod(this,'2026-06')">Jun</button>
-      </div>
-    </div>
-  </div>
-  <div class="scorecard-grid" id="all-scorecards"></div>
-  <div class="card">
-    <div class="card-title">Service Comparison</div>
-    <div style="overflow-x:auto;">
-      <table class="data-table" id="all-table">
-        <thead><tr></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="card">
     <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
-      CVR by Service
-      <div class="btn-group" id="cvr-chart-toggle">
-        <button class="active" onclick="setCvrChartType(this,'flow')">Flow CVR</button>
-        <button onclick="setCvrChartType(this,'revenue')">Revenue CVR</button>
-      </div>
+      <span>Metric Trend (period over period)</span>
+      <select id="trends-metric" onchange="renderTrends()" style="height:30px;font-size:12px;padding:0 8px;border:1px solid var(--card-border);border-radius:6px;">
+        <option value="conversion">Conversion (Purchased ÷ Sessions)</option>
+        <option value="sessions">Sessions (landing page views)</option>
+        <option value="revenue">Revenue (backend orders)</option>
+      </select>
     </div>
-    <div class="chart-box"><canvas id="all-cvr-chart"></canvas></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Cross-Service Funnel Comparison</div>
-    <div class="controls" style="margin-bottom:12px;">
-      <div class="control-group">
-        <label>Compare Services (select 2-3)</label>
-        <div class="multi-select" id="compare-services-ms">
-          <button class="ms-btn" onclick="toggleMsDropdown(this)">Select Services &#9662;</button>
-          <div class="ms-dropdown" id="compare-services-dropdown"></div>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="renderComparison()">Compare</button>
-    </div>
-    <div class="chart-box" style="height:400px;"><canvas id="compare-chart"></canvas></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Custom CVR Formula</div>
-    <div class="cvr-config" id="cvr-config"></div>
-    <button class="btn btn-primary" style="margin-top:8px;" onclick="saveCvrConfig()">Save &amp; Apply</button>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Backend orders ÷ landing page views per service. Sessions = page_view on landing path. Revenue = orders × AOV from Sab's backend dashboard.</div>
+    <div class="chart-box"><canvas id="trends-chart"></canvas></div>
   </div>
 </div>
 
@@ -826,7 +743,6 @@ function getFlowBreakdown(svc, agg) {
 let DATA = {};
 let currentFunnelPeriod = 'all';
 let currentTrendsGran = 'weekly';
-let currentAllPeriod = 'all';
 let currentDailyGran = 'daily';
 let chartInstances = {};
 
@@ -835,7 +751,6 @@ function init() {
   loadSeedData();
   loadUploadedData();
   populateDropdowns();
-  loadCvrConfig();
   const fs = document.getElementById('funnel-service');
   if (fs && fs.value) applyServiceDateRange(fs.value);
   const ds = document.getElementById('daily-service');
@@ -898,9 +813,6 @@ function populateDropdowns() {
   }
   // Daily events multi-select
   updateDailyEvents();
-  // Compare services multi-select
-  const cdd = document.getElementById('compare-services-dropdown');
-  cdd.innerHTML = names.map(n => `<label><input type="checkbox" value="${n}" onchange="renderAllServices()"> ${n}</label>`).join('');
 }
 
 function updateDailyEvents() {
@@ -996,7 +908,6 @@ function switchTab(tab, el) {
   if (el) el.classList.add('active');
   if (tab === 'funnel') renderFunnel();
   else if (tab === 'trends') { updateDailyEvents(); renderDaily(); renderTrends(); }
-  else if (tab === 'allservices') renderAllServices();
   else if (tab === 'landingpage') renderLandingPage();
   else if (tab === 'datamanager') renderInventory();
 }
@@ -1060,13 +971,6 @@ function setGran(btn, g) {
   currentTrendsGran = g;
   renderTrends();
 }
-function setAllPeriod(btn, p) {
-  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentAllPeriod = p;
-  renderAllServices();
-}
-
 function setDailyGran(btn, gran) {
   currentDailyGran = gran;
   btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -2234,36 +2138,48 @@ function renderTrends() {
 
   const sortedPeriods = Object.keys(periods).sort();
 
+  // AOV from backend MIX consts (revenue per service / order)
+  function getServiceAOV(svc) {
+    if (svc === 'Babysitter / Nanny' && typeof NANNIES_MIX !== 'undefined') {
+      const M = NANNIES_MIX;
+      const o = M.daily.count + M.weekly.count + M.monthly.count;
+      const r = M.daily.rev + M.weekly.rev + M.monthly.rev;
+      return o ? r/o : 0;
+    }
+    if (svc === 'Gear Refresh' && typeof GEAR_MIX !== 'undefined') {
+      const M = GEAR_MIX;
+      const o = M.carseat.count + M.stroller.count;
+      const r = M.carseat.rev + M.stroller.rev;
+      return o ? r/o : 0;
+    }
+    if (svc === 'Home Cleaning' && typeof HOMECARE_MIX !== 'undefined') {
+      const M = HOMECARE_MIX;
+      const o = M.regular.count + M.deep.count;
+      const r = M.regular.rev + M.deep.rev;
+      return o ? r/o : 0;
+    }
+    if (svc === 'Kids Interior') return 19129.50;   // 38,259 / 2 orders, from findings
+    return 0;
+  }
+
   function computeMetric(pRows, key) {
     const agg = aggregateByEvent(pRows);
-    const sessions = (agg.session_start||{}).u||0;
-    const browse = (agg.view_item_list||{}).u||0;
-    const selects = (agg.select_item||{}).u||0;
-    const intent = ((agg.booking_started||{}).u||0) + ((agg.enquiry_started||{}).u||0);
-    const formSt = (agg.form_start||{}).u||0;
-    const compl = ((agg.place_order||{}).u||0) + ((agg.generate_lead||{}).u||0);
-    const conv = ((agg.purchase||{}).u||0) + ((agg.generate_lead||{}).u||0);
-    const rev = Object.values(agg).reduce((s,a) => s+a.r, 0);
+    // Landing-page sessions per service. Fall back to session_start/page_view when split not available.
+    const sessions = (agg.page_view__landing||{}).u || (agg.session_start||{}).u || (agg.page_view||{}).u || 0;
+    const orders = (agg.order_confirmed||{}).u || 0;
+    const aov = getServiceAOV(svc);
     switch(key) {
+      case 'conversion': return sessions ? orders/sessions : 0;
       case 'sessions': return sessions;
-      case 'browse_rate': return sessions?browse/sessions:0;
-      case 'ctr': return browse?selects/browse:0;
-      case 'intent_rate': return selects?intent/selects:0;
-      case 'form_completion': return formSt?compl/formSt:0;
-      case 'flow_cvr': { const fc = getFlowConversions(svc, agg); return sessions?fc/sessions:0; }
-      case 'rev_cvr': return sessions?((agg.purchase||{}).u||0)/sessions:0;
-      case 'cvr': { const fc2 = getFlowConversions(svc, agg); return sessions?fc2/sessions:0; }
-      case 'revenue': return rev;
-      case 'aov': return conv?rev/conv:0;
+      case 'revenue': return orders * aov;
       default: return 0;
     }
   }
 
-  const isRate = ['browse_rate','ctr','intent_rate','form_completion','cvr'].includes(metricKey);
-  const isCurrency = ['revenue','aov'].includes(metricKey);
+  const isRate = metricKey === 'conversion';
+  const isCurrency = metricKey === 'revenue';
   const values = sortedPeriods.map(p => computeMetric(periods[p], metricKey));
 
-  // Main chart
   destroyChart('trends-chart');
   const ctx = document.getElementById('trends-chart').getContext('2d');
   chartInstances['trends-chart'] = new Chart(ctx, {
@@ -2281,7 +2197,17 @@ function renderTrends() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              return isRate ? fmtPct(v) : isCurrency ? fmtCur(v) : fmt(v);
+            }
+          }
+        }
+      },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 } } },
         y: {
@@ -2294,274 +2220,6 @@ function renderTrends() {
       }
     }
   });
-
-  // Sparklines
-  const allMetrics = ['sessions','browse_rate','ctr','intent_rate','form_completion','cvr','revenue','aov'];
-  const metricLabels = { sessions:'Sessions', browse_rate:'Browse Rate', ctr:'Listing CTR', intent_rate:'Intent Rate', form_completion:'Form Completion', cvr:'Overall CVR', revenue:'Revenue', aov:'AOV' };
-  const sparkRow = document.getElementById('sparkline-row');
-  sparkRow.innerHTML = '';
-  allMetrics.forEach(mk => {
-    const vals = sortedPeriods.map(p => computeMetric(periods[p], mk));
-    const last = vals[vals.length-1] || 0;
-    const isR = ['browse_rate','ctr','intent_rate','form_completion','cvr'].includes(mk);
-    const isC = ['revenue','aov'].includes(mk);
-    const div = document.createElement('div');
-    div.className = 'sparkline-card';
-    div.innerHTML = `<div class="sp-label">${metricLabels[mk]}</div><div class="sp-value">${isR?fmtPct(last):isC?fmtCur(last):fmt(last)}</div><canvas id="spark-${mk}"></canvas>`;
-    sparkRow.appendChild(div);
-    setTimeout(() => {
-      const c = document.getElementById('spark-'+mk);
-      if (!c) return;
-      new Chart(c.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels: sortedPeriods,
-          datasets: [{ data: vals, borderColor: DATA[svc].color, borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: { target: 'origin', above: DATA[svc].color+'15' } }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } } }
-      });
-    }, 50);
-  });
-
-}
-
-// ====== TAB 4: ALL SERVICES ======
-function renderAllServices() {
-  const period = currentAllPeriod;
-  const services = Object.keys(DATA).sort();
-
-  const allStats = services.map(svc => {
-    const rows = getServiceData(svc, period);
-    const agg = aggregateByEvent(rows);
-    const sessions = (agg.session_start||{}).u||0;
-    const browse = (agg.view_item_list||{}).u||0;
-    const selects = (agg.select_item||{}).u||0;
-    const intent = ((agg.booking_started||{}).u||0) + ((agg.enquiry_started||{}).u||0);
-    const formSt = (agg.form_start||{}).u||0;
-    const compl = ((agg.place_order||{}).u||0) + ((agg.generate_lead||{}).u||0);
-    const conv = ((agg.purchase||{}).u||0) + ((agg.generate_lead||{}).u||0);
-    const rev = Object.values(agg).reduce((s,a)=>s+a.r, 0);
-    const cvrCfg = getCvrFormula(svc);
-    const cvrN = (agg[cvrCfg.num]||{}).u||0;
-    const cvrD = (agg[cvrCfg.den]||{}).u||0;
-    const flowConvUsers = getFlowConversions(svc, agg);
-    const purchaseU = (agg.purchase||{}).u||0;
-    return {
-      name: svc, type: DATA[svc].type, color: DATA[svc].color,
-      sessions, browse: sessions?browse/sessions:0, ctr: browse?selects/browse:0,
-      intent: selects?intent/selects:0, completion: formSt?compl/formSt:0,
-      flowCvr: sessions?flowConvUsers/sessions:0,
-      revCvr: sessions?purchaseU/sessions:0,
-      revenue: rev, aov: purchaseU?rev/purchaseU:0,
-      convUsers: flowConvUsers, purchaseUsers: purchaseU,
-      flowEvent: (SERVICE_FLOWS[svc]||{}).flowEvent||'?'
-    };
-  });
-
-  // Scorecards
-  const totalSessions = allStats.reduce((s,a) => s+a.sessions, 0);
-  const totalRevenue = allStats.reduce((s,a) => s+a.revenue, 0);
-  const totalConv = allStats.reduce((s,a) => s+a.convUsers, 0);
-  const totalPurchases = allStats.reduce((s,a) => s+a.purchaseUsers, 0);
-  const avgFlowCvr = totalSessions > 0 ? totalConv/totalSessions : 0;
-  const avgRevCvr = totalSessions > 0 ? totalPurchases/totalSessions : 0;
-  document.getElementById('all-scorecards').innerHTML = [
-    { label:'Total Sessions', value:fmt(totalSessions) },
-    { label:'Total Revenue', value:fmtCur(totalRevenue) },
-    { label:'Total Conversions', value:fmt(totalConv) },
-    { label:'Avg Flow CVR', value:fmtPct(avgFlowCvr) },
-    { label:'Avg Rev CVR', value:fmtPct(avgRevCvr) },
-  ].map(s => `<div class="scorecard"><div class="sc-value">${s.value}</div><div class="sc-label">${s.label}</div></div>`).join('');
-
-  // Table
-  function quartile(arr, val) {
-    const sorted = [...arr].sort((a,b)=>a-b);
-    const q1 = sorted[Math.floor(sorted.length*0.25)];
-    const q3 = sorted[Math.floor(sorted.length*0.75)];
-    if (val >= q3) return 'cell-green';
-    if (val <= q1) return 'cell-red';
-    return '';
-  }
-  const flowCvrVals = allStats.map(s=>s.flowCvr);
-  const revCvrVals = allStats.map(s=>s.revCvr);
-  const revVals = allStats.map(s=>s.revenue);
-
-  const thead = `<tr>
-    <th class="sortable" onclick="sortAllTable(0)">Service</th>
-    <th>Type</th>
-    <th class="num sortable" onclick="sortAllTable(2)" title="session_start users — Total unique users who started a session">Sessions <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(3)" title="view_item_list users / session_start users — % who saw service listings">Browse% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(4)" title="select_item users / view_item_list users — Click-through from listings to a specific item">CTR% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(5)" title="(booking_started + enquiry_started) users / select_item users — % who declared booking/enquiry intent">Intent% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(6)" title="(place_order + generate_lead) users / form_start users — % who completed the form">Compl% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(7)" title="Flow CVR = on-site completion / sessions. Measures website conversion (form submit, booking confirmed, lead generated). Payment happens later for many services.">Flow CVR% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(8)" title="Revenue CVR = purchase / sessions. Only counts completed Checkout.com payments. N/A for enquiry-only services.">Rev CVR% <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(9)" title="Sum of purchase event revenue in AED">Revenue <span class="info-icon">ⓘ</span></th>
-    <th class="num sortable" onclick="sortAllTable(10)" title="Average Order Value = Revenue / conversion users">AOV <span class="info-icon">ⓘ</span></th>
-  </tr>`;
-  document.querySelector('#all-table thead').innerHTML = thead;
-  let tbody = '';
-  allStats.forEach(s => {
-    tbody += `<tr>
-      <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.color};margin-right:6px;"></span>${s.name}</td>
-      <td>${s.type}</td>
-      <td class="num">${s.sessions.toLocaleString()}</td>
-      <td class="num">${fmtPct(s.browse)}</td>
-      <td class="num">${fmtPct(s.ctr)}</td>
-      <td class="num">${fmtPct(s.intent)}</td>
-      <td class="num">${fmtPct(s.completion)}</td>
-      <td class="num ${quartile(flowCvrVals, s.flowCvr)}" title="${s.flowEvent}">${fmtPct(s.flowCvr)}</td>
-      <td class="num ${quartile(revCvrVals, s.revCvr)}">${s.revCvr > 0 ? fmtPct(s.revCvr) : '<span style="color:var(--text-muted)">N/A</span>'}</td>
-      <td class="num ${quartile(revVals, s.revenue)}">${s.revenue > 0 ? fmtCur(s.revenue) : '-'}</td>
-      <td class="num">${s.aov > 0 ? fmtCur(s.aov) : '-'}</td>
-    </tr>`;
-  });
-  document.querySelector('#all-table tbody').innerHTML = tbody;
-
-  // CVR bar chart
-  window._allStats = allStats; // store for toggle
-  renderCvrChart(allStats, currentCvrChartType);
-}
-
-let currentCvrChartType = 'flow';
-function setCvrChartType(btn, type) {
-  currentCvrChartType = type;
-  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (window._allStats) renderCvrChart(window._allStats, type);
-}
-
-function renderCvrChart(allStats, type) {
-  const key = type === 'revenue' ? 'revCvr' : 'flowCvr';
-  const label = type === 'revenue' ? 'Revenue CVR' : 'Flow CVR';
-  const sorted = [...allStats].sort((a,b) => b[key] - a[key]);
-  destroyChart('all-cvr-chart');
-  const ctx = document.getElementById('all-cvr-chart').getContext('2d');
-  chartInstances['all-cvr-chart'] = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: sorted.map(s => s.name),
-      datasets: [{
-        label: label,
-        data: sorted.map(s => s[key]),
-        backgroundColor: sorted.map(s => s.color + 'cc'),
-        borderColor: sorted.map(s => s.color),
-        borderWidth: 1, borderRadius: 4,
-      }]
-    },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true, ticks: { callback: v => fmtPct(v), font: { size: 11 } }, grid: { color: '#f1f5f9' } },
-        y: { ticks: { font: { size: 12 } }, grid: { display: false } }
-      }
-    }
-  });
-
-  // CVR config
-  renderCvrConfig();
-}
-
-let allTableSortCol = -1, allTableSortAsc = true;
-function sortAllTable(col) {
-  if (allTableSortCol === col) allTableSortAsc = !allTableSortAsc;
-  else { allTableSortCol = col; allTableSortAsc = true; }
-  const tbody = document.querySelector('#all-table tbody');
-  const rows = [...tbody.querySelectorAll('tr')];
-  rows.sort((a,b) => {
-    let va = a.cells[col].textContent.replace(/[^0-9.\-]/g,'');
-    let vb = b.cells[col].textContent.replace(/[^0-9.\-]/g,'');
-    if (col === 0 || col === 1) { va = a.cells[col].textContent; vb = b.cells[col].textContent; return allTableSortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
-    va = parseFloat(va)||0; vb = parseFloat(vb)||0;
-    return allTableSortAsc ? va-vb : vb-va;
-  });
-  rows.forEach(r => tbody.appendChild(r));
-}
-
-function renderComparison() {
-  const checked = [...document.querySelectorAll('#compare-services-dropdown input:checked')].map(i => i.value);
-  if (checked.length < 2 || checked.length > 3) { alert('Select 2-3 services to compare.'); return; }
-
-  // Collect all events across selected services
-  const allEvts = new Set();
-  const svcAggs = {};
-  checked.forEach(svc => {
-    const rows = getServiceData(svc, currentAllPeriod);
-    const agg = aggregateByEvent(rows);
-    svcAggs[svc] = agg;
-    FUNNEL_ORDER.forEach(e => { if (agg[e] && agg[e].u > 0) allEvts.add(e); });
-  });
-  const steps = FUNNEL_ORDER.filter(e => allEvts.has(e));
-
-  const datasets = checked.map((svc, i) => ({
-    label: svc,
-    data: steps.map(e => {
-      const topU = (svcAggs[svc].session_start||{}).u||1;
-      return (svcAggs[svc][e]||{}).u ? (svcAggs[svc][e].u / topU) * 100 : 0;
-    }),
-    backgroundColor: DATA[svc].color + 'aa',
-    borderColor: DATA[svc].color,
-    borderWidth: 1, borderRadius: 3,
-  }));
-
-  destroyChart('compare-chart');
-  const ctx = document.getElementById('compare-chart').getContext('2d');
-  chartInstances['compare-chart'] = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: steps.map(e => EVENT_LABELS[e]||e), datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top', labels: { font: { size: 12 } } },
-        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}% of sessions` } }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-        y: { beginAtZero: true, ticks: { callback: v => v+'%', font: { size: 11 } }, grid: { color: '#f1f5f9' } }
-      }
-    }
-  });
-}
-
-// CVR Config
-function getCvrFormula(svc) {
-  try {
-    const cfg = JSON.parse(localStorage.getItem('mw_cvr_config')||'{}');
-    if (cfg[svc]) return cfg[svc];
-  } catch(e) {}
-  const type = DATA[svc]?.type;
-  if (type === 'enquiry') return { num: 'generate_lead', den: 'session_start' };
-  return { num: 'purchase', den: 'session_start' };
-}
-
-function loadCvrConfig() {} // Loaded on demand via getCvrFormula
-
-function renderCvrConfig() {
-  const container = document.getElementById('cvr-config');
-  const services = Object.keys(DATA).sort();
-  const allEvents = FUNNEL_ORDER;
-  let html = '<h4>Define CVR = Numerator / Denominator per service</h4>';
-  services.forEach(svc => {
-    const cfg = getCvrFormula(svc);
-    html += `<div class="cvr-row"><span style="min-width:140px;font-weight:500;">${svc}</span>`;
-    html += `<select data-svc="${svc}" data-role="num">${allEvents.map(e => `<option value="${e}" ${e===cfg.num?'selected':''}>${EVENT_LABELS[e]||e}</option>`).join('')}</select>`;
-    html += `<span>/</span>`;
-    html += `<select data-svc="${svc}" data-role="den">${allEvents.map(e => `<option value="${e}" ${e===cfg.den?'selected':''}>${EVENT_LABELS[e]||e}</option>`).join('')}</select>`;
-    html += `</div>`;
-  });
-  container.innerHTML = html;
-}
-
-function saveCvrConfig() {
-  const cfg = {};
-  document.querySelectorAll('.cvr-row select[data-role="num"]').forEach(sel => {
-    const svc = sel.dataset.svc;
-    const den = document.querySelector(`.cvr-row select[data-svc="${CSS.escape(svc)}"][data-role="den"]`).value;
-    cfg[svc] = { num: sel.value, den };
-  });
-  localStorage.setItem('mw_cvr_config', JSON.stringify(cfg));
-  renderAllServices();
-  alert('CVR formulas saved.');
 }
 
 // ====== LANDING PAGE VIEW (sample data — swap for real GA4 later) ======

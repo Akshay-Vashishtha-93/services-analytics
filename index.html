@@ -2035,29 +2035,8 @@ function renderDaily() {
     }]
   });
 
-  // Daily summary table
-  const svcAgg = {};
-  rows.forEach(r => {
-    if (!svcAgg[r.d]) svcAgg[r.d] = {};
-    svcAgg[r.d][r.e] = r;
-  });
-  const thead = '<tr><th>Date</th><th class="num">Sessions</th><th class="num">Browse</th><th class="num">Selects</th><th class="num">Book/Enquiry</th><th class="num">Conversions</th><th class="num">Revenue</th><th class="num">CVR%</th></tr>';
-  document.querySelector('#daily-table thead').innerHTML = thead;
-  let tbody = '';
-  dates.forEach(d => {
-    const day = svcAgg[d] || {};
-    const sessions = (day.session_start||{}).u||0;
-    const browse = (day.view_item_list||{}).u||0;
-    const selects = (day.select_item||{}).u||0;
-    const bookEnq = ((day.booking_started||{}).u||0) + ((day.enquiry_started||{}).u||0);
-    const conv = ((day.purchase||{}).u||0) + ((day.generate_lead||{}).u||0);
-    const rev = Object.values(day).reduce((s,r) => s + (r.r||0), 0);
-    const cvr = sessions > 0 ? conv/sessions : 0;
-    tbody += `<tr><td>${d}</td><td class="num">${sessions}</td><td class="num">${browse}</td><td class="num">${selects}</td><td class="num">${bookEnq}</td><td class="num">${conv}</td><td class="num">${rev?fmtCur(rev):'-'}</td><td class="num">${sessions?fmtPct(cvr):'-'}</td></tr>`;
-  });
-  document.querySelector('#daily-table tbody').innerHTML = tbody;
-
-  // Anomaly detection
+  // Anomaly detection (kept for telemetry — UI panel was removed, but logic retained
+  // in case future telemetry consumer is added).
   const anomalies = [];
   const maWindow = currentDailyGran === 'daily' ? 7 : currentDailyGran === 'weekly' ? 3 : 2;
   const maLabel = currentDailyGran === 'daily' ? '7d' : currentDailyGran === 'weekly' ? '3wk' : '2mo';
@@ -2077,19 +2056,6 @@ function renderDaily() {
       }
     }
   });
-  // Sort by absolute deviation (most significant first) and show top 5
-  anomalies.sort((a, b) => b.deviationNum - a.deviationNum);
-  const totalAnomalies = anomalies.length;
-  const topAnomalies = anomalies.slice(0, 5);
-  const panel = document.getElementById('anomaly-panel');
-  if (totalAnomalies === 0) {
-    panel.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:12px;">No anomalies detected in the selected period.</p>';
-  } else {
-    const note = `<p style="font-size:11px;color:var(--text-muted);padding:4px 12px 8px;">Showing top 5 anomalies. ${totalAnomalies} total detected.</p>`;
-    panel.innerHTML = note + topAnomalies.map(a =>
-      `<div class="anomaly-item ${a.severe?'severe':''}"><strong>${a.date}</strong> &mdash; <code>${a.event}</code>: ${a.dir === 'spike' ? '&#9650;' : '&#9660;'} ${a.value} (${maLabel} avg: ${a.avg}, ${a.deviation}% ${a.dir})</div>`
-    ).join('');
-  }
 }
 
 function toggleMsDropdown(btn) {

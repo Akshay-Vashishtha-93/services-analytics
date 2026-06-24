@@ -1481,6 +1481,7 @@ function renderFunnelTopStats(svc, range) {
     const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(2) : '0.00';
     el.innerHTML = [
       ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'Step 1 · page_view', accent:'#3b82f6', icon:'eye'}),
+      ufStat({label:'Scrolled', value:fmt(a.scroll), pill:pctOf(a.scroll,a.landing)+' of landed', note:'scroll · ≥ 90% depth (engagement)', accent:'#0ea5e9', icon:'eye'}),
       ufStat({label:'Select Package', value:fmt(a.detail), pill:pctOf(a.detail,a.landing)+' of landed', note:fmt(a.detailCar)+' Car seat + '+fmt(a.detailStr)+' Stroller', accent:'#6366f1', icon:'book'}),
       ufStat({label:'WhatsApp Clicks', value:fmt(a.whatsapp), pill:pctOf(a.whatsapp,a.landing)+' of landed', note:'click · api.whatsapp.com', accent:'#16a34a', icon:'chat'}),
       ufStat({label:'Proceed to Checkout', value:fmt(a.checkout), pill:pctOf(a.checkout,a.landing)+' of landed', note:'place_order (batched)', accent:'#f59e0b', icon:'cart'}),
@@ -1610,10 +1611,8 @@ function renderFunnelPyramid(svc, range) {
     const a = aggGear(range);
     const steps = [
       { label:'Home Page Viewed', event:'page_view · /en, /ar', users:a.landing, meta:'Landed on homepage' },
-      { label:'Scrolled', event:'scroll · landing', users:a.scroll, meta:'≥ 90% scroll depth' },
       { label:'Select Package', event:'page_view · detail pages', users:a.detail, meta:`Car seat ${a.detailCar} · Stroller ${a.detailStr}` },
       { label:'Book Now', event:'booking_started', users:a.book, meta:`Car seat ${a.bookCar} · Stroller ${a.bookStr}` },
-      { label:'Form Interaction', event:'form_start', users:a.form, meta:`Car seat ${a.formCar} · Stroller ${a.formStr}` },
       { label:'Proceed to Checkout', event:'place_order (batched)', users:a.checkout, meta:`Car seat ${a.checkoutCar} · Stroller ${a.checkoutStr}` },
       { label:'Purchased', event:"backend dashboard ✓", users:a.orders, meta:`Car seat ${a.orderCar} · Stroller ${a.orderStr} · AED 12,542` }
     ];
@@ -1668,6 +1667,8 @@ function renderFunnelPyramid(svc, range) {
 
 function renderPyramidLayout(steps) {
   const N = steps.length;
+  const subEl = document.getElementById('funnel-pyramid-sub');
+  if (subEl) subEl.textContent = `${N}-step funnel. Step name inside each layer. Left = event source. Right = users, conversion %, and drop-off from previous step.`;
   const H = 495;
   const layerH = H / N;
   const sideStyle = `grid-template-rows: repeat(${N}, ${layerH}px); height: ${H}px;`;
@@ -1871,7 +1872,7 @@ function renderFunnelFindings(svc, range) {
     const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(2) : '0.00';
     const dropCheckout = a.checkout > 0 ? ((a.checkout-a.orders)/a.checkout*100).toFixed(1) : '0.0';
     el.innerHTML = `
-      <div class="uf-finding warn"><strong>Funnel inversion at Step 2 → 3</strong><span>Scrolled (${a.scroll}) &lt; Select Package (${a.detail}). Users land directly on detail pages via deep links/ads, bypassing the homepage.</span></div>
+      <div class="uf-finding warn"><strong>Most buyers skip the homepage</strong><span>Only ${fmt(a.scroll)} scrolled the homepage vs ${fmt(a.detail)} who reached a Select Package detail page. Users land directly on detail pages via deep links/ads, so scroll is tracked as engagement, not a funnel step.</span></div>
       <div class="uf-finding"><strong>Stroller outperforms Car seat</strong><span>Stroller ${a.detailStr} views → ${a.orderStr} orders vs Car seat ${a.detailCar} → ${a.orderCar}. Stroller leads ~58% of detail views and orders.</span></div>
       <div class="uf-finding warn"><strong>Checkout → Purchase: ${dropCheckout}% drop</strong><span>${a.checkout} clicked Place Order but only ${a.orders} paid. Gap likely Checkout.com declines or abandonment.</span></div>
       <div class="uf-finding"><strong>End-to-end CVR: ${cvr}%</strong><span>${a.orders} paid orders from ${fmt(a.landing)} landings · AED 12,542 revenue · AOV AED 153. Healthiest CVR across audited services.</span></div>`;
@@ -2046,30 +2047,30 @@ const GEAR_STAGES = [
     { e: 'page_view__landing',           label: 'page_view (Homepage — /en, /ar)',                  step: '1. Home Page Viewed' }
   ]},
   { stage: 'Stage 2 — Engagement', events: [
-    { e: 'scroll__landing',              label: 'scroll (on landing — /en, /ar)',                    step: '2. Scrolled' },
+    { e: 'scroll__landing',              label: 'scroll (on landing — /en, /ar)',                    step: '(engagement only — shown as top stat)' },
     { e: 'whatsapp_click',               label: 'WhatsApp click (click + link_domain=api.whatsapp.com)', step: '(filter: click + api.whatsapp.com)' }
   ]},
   { stage: 'Stage 3 — Selection', events: [
-    { e: 'page_view__detail_carseat',    label: 'page_view (Car seat detail — /(en|ar)/psa4l7…)',    step: '3. Select Package (Car seat)' },
-    { e: 'page_view__detail_stroller',   label: 'page_view (Stroller detail — /(en|ar)/qkpha…)',    step: '3. Select Package (Stroller)' }
+    { e: 'page_view__detail_carseat',    label: 'page_view (Car seat detail — /(en|ar)/psa4l7…)',    step: '2. Select Package (Car seat)' },
+    { e: 'page_view__detail_stroller',   label: 'page_view (Stroller detail — /(en|ar)/qkpha…)',    step: '2. Select Package (Stroller)' }
   ]},
   { stage: 'Stage 4 — Booking Intent', events: [
-    { e: 'booking_started',              label: 'booking_started (combined)',                         step: '4. Book Now' },
+    { e: 'booking_started',              label: 'booking_started (combined)',                         step: '3. Book Now' },
     { e: 'booking_started__carseat',     label: '— Car seat (filter: path contains psa4l7…)',         step: '(Car seat split)' },
     { e: 'booking_started__stroller',    label: '— Stroller (filter: path contains qkpha…)',          step: '(Stroller split)' }
   ]},
   { stage: 'Stage 5 — Booking Form', events: [
-    { e: 'form_start',                   label: 'form_start (combined — fires twice per session)',    step: '5. Form Interaction' },
+    { e: 'form_start',                   label: 'form_start (combined — fires twice per session)',    step: '(engagement only — not a funnel step)' },
     { e: 'form_start__carseat',          label: '— Car seat (filter: path contains psa4l7…)',         step: '(Car seat split)' },
     { e: 'form_start__stroller',         label: '— Stroller (filter: path contains qkpha…)',          step: '(Stroller split)' }
   ]},
   { stage: 'Stage 6 — Checkout', events: [
-    { e: 'place_order',                  label: 'place_order (combined; begin_checkout + add_payment_info + form_submit fire batched)', step: '6. Proceed to Checkout' },
+    { e: 'place_order',                  label: 'place_order (combined; begin_checkout + add_payment_info + form_submit fire batched)', step: '4. Proceed to Checkout' },
     { e: 'place_order__carseat',         label: '— Car seat (filter: path contains psa4l7…)',         step: '(Car seat split)' },
     { e: 'place_order__stroller',        label: '— Stroller (filter: path contains qkpha…)',          step: '(Stroller split)' }
   ]},
   { stage: 'Stage 7 — Conversion', events: [
-    { e: 'order_confirmed',              label: "Order Confirmed (Sab's backend, combined)",          step: "7. Purchased ✓ — source of truth" },
+    { e: 'order_confirmed',              label: "Order Confirmed (Sab's backend, combined)",          step: "5. Purchased ✓ — source of truth" },
     { e: 'order_confirmed__carseat',     label: '— Car seat',                                         step: '(Car seat split)' },
     { e: 'order_confirmed__stroller',    label: '— Stroller',                                         step: '(Stroller split)' }
   ]}

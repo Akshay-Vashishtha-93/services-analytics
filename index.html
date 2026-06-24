@@ -1705,12 +1705,11 @@ function renderFunnelPyramid(svc, range) {
     const a = aggKids(range);
     const steps = [
       { label:'Homepage', event:'page_view · locale roots (/en, /ar)', users:a.landing, meta:'User landed on Kids & Nursery Room homepage' },
-      { label:'Scrolled', event:'scroll · on landing', users:a.scroll, meta:'Scrolled past 90% of the homepage (enhanced measurement)' },
       { label:'Select Package', event:'select_item · kids_nursery_packages', users:a.selectPkg, meta:'Picked a specific package on the listing' },
       { label:'Request Consultation', event:'page_view · /request-consultation', users:a.request, meta:'Reached the consultation form page' },
       { label:'Contact Info Entered', event:'contact_info_entered', users:a.contact, meta:'Filled name + email + phone' },
       { label:'Consultation Requested', event:'page_view · /success', users:a.success, meta:'Reached the post-submit confirmation page (form submitted)' },
-      { label:'Order Confirmed (Paid)', event:"Sab's backend dashboard ✓", users:a.orders, meta:'Actual paid bookings: 2 orders · AED 38,259 · AOV AED 19,129' }
+      { label:'Purchased', event:"Sab's backend dashboard ✓", users:a.orders, meta:'Actual paid bookings: 2 orders · AED 38,259 · AOV AED 19,129' }
     ];
     wrap.innerHTML = renderPyramidLayout(steps);
     return;
@@ -2005,10 +2004,10 @@ function renderFunnelFindings(svc, range) {
   if (isKidsService(svc)) {
     const a = aggKids(range);
     const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(3) : '0.000';
-    const dropScroll = a.scroll > 0 ? ((a.scroll-a.selectPkg)/a.scroll*100).toFixed(1) : '0.0';
+    const dropHomeToSelect = a.landing > 0 ? ((a.landing-a.selectPkg)/a.landing*100).toFixed(1) : '0.0';
     const dropSuccessToOrders = a.success > 0 ? ((a.success-a.orders)/a.success*100).toFixed(1) : '0.0';
     el.innerHTML = `
-      <div class="uf-finding warn"><strong>Scrolled → Select Package: ${dropScroll}% drop</strong><span>${fmt(a.scroll-a.selectPkg)} users scroll the homepage but never pick a package. Biggest leak.</span></div>
+      <div class="uf-finding warn"><strong>Homepage → Select Package: ${dropHomeToSelect}% drop</strong><span>${fmt(a.landing-a.selectPkg)} users landed but never picked a package. Biggest top-of-funnel leak.</span></div>
       <div class="uf-finding warn"><strong>Consultation → Paid Order: ${dropSuccessToOrders}% drop</strong><span>${a.success} hit "Request Submitted" but only ${a.orders} converted to paid orders. Free consultation → paid project is the real bottleneck.</span></div>
       <div class="uf-finding"><strong>End-to-end CVR: ${cvr}%</strong><span>${a.orders} paid orders from ${fmt(a.landing)} landings · AED 38,259 revenue · AOV AED 19,129.</span></div>`;
     return;
@@ -2104,7 +2103,8 @@ const HOMECARE_STAGES = [
   ]},
   { stage: 'Stage 2 — Engagement', events: [
     { e: 'view_item_list',                    label: 'view_item_list (Regular + Deep cards rendered)',       step: '2. View Item List' },
-    { e: 'scroll__landing',                   label: 'scroll (on landing — /en, /ar)',                        step: '(engagement only)' }
+    { e: 'scroll__landing',                   label: 'scroll (on landing — /en, /ar)',                        step: '(engagement only)' },
+    { e: 'whatsapp_click',                    label: 'WhatsApp click (link_domain = api.whatsapp.com)',       step: '(engagement only)' }
   ]},
   { stage: 'Stage 3 — Selection', events: [
     { e: 'page_view__detail',                 label: 'page_view (detail pages combined)',                     step: '3. Service Detail Viewed' },
@@ -2136,7 +2136,8 @@ const HEALTHYHOME_STAGES = [
     { e: 'view_item_list',                    label: 'view_item_list (9 service cards rendered)',                 step: '2. View Item List' },
     { e: 'view_item_list_uae',                label: '— UAE',                                                     step: '(UAE split)' },
     { e: 'view_item_list_ksa',                label: '— KSA',                                                     step: '(KSA split)' },
-    { e: 'scroll__landing',                   label: 'scroll (on landing)',                                       step: '(engagement only)' }
+    { e: 'scroll__landing',                   label: 'scroll (on landing)',                                       step: '(engagement only)' },
+    { e: 'whatsapp_click',                    label: 'WhatsApp click (link_domain = api.whatsapp.com)',           step: '(engagement only)' }
   ]},
   { stage: 'Stage 3 — Selection', events: [
     { e: 'page_view__detail',                 label: 'page_view (any service detail or sub-service page)',        step: '3. Service Detail Viewed' },
@@ -2174,7 +2175,8 @@ const WALLPAPER_STAGES = [
     { e: 'view_item_list',                    label: 'view_item_list (Wallpaper categories rendered)',           step: '2. Viewed Wallpaper List' }
   ]},
   { stage: 'Stage 3 — Engagement', events: [
-    { e: 'whatsapp_click',                    label: 'WhatsApp click (link_domain = api.whatsapp.com)',          step: '(engagement)' }
+    { e: 'whatsapp_click',                    label: 'WhatsApp click (link_domain = api.whatsapp.com)',          step: '(engagement only)' }
+    /* scroll not in this service's GA4 extracts yet — pull a scroll report to add */
   ]},
   { stage: 'Stage 4 — Address Page', events: [
     { e: 'booking_started',                   label: 'booking_started (clicked Book a Free Consultation on landing)', step: '(Direct route trigger)' },

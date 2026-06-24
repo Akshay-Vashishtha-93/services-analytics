@@ -1536,10 +1536,10 @@ function renderFunnelTopStats(svc, range) {
     const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(3) : '0.000';
     el.innerHTML = [
       ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'page_view · /en, /ar', accent:'#3b82f6', icon:'eye'}),
-      ufStat({label:'Saw Designs', value:fmt(a.viewList), pill:pctOf(a.viewList,a.landing)+' of landed', note:'view_item_list', accent:'#6366f1', icon:'book'}),
+      ufStat({label:'Viewed Wallpaper List', value:fmt(a.viewList), pill:pctOf(a.viewList,a.landing)+' of landed', note:'view_item_list', accent:'#6366f1', icon:'book'}),
       ufStat({label:'WhatsApp Clicks', value:fmt(a.whatsapp), pill:pctOf(a.whatsapp,a.landing)+' of landed', note:'click · api.whatsapp.com', accent:'#16a34a', icon:'chat'}),
       ufStat({label:'Wall Measurement', value:fmt(a.wallMeas), pill:pctOf(a.wallMeas,a.landing)+' of landed', note:'engaged with estimator', accent:'#0ea5e9', icon:'eye'}),
-      ufStat({label:'Lead Captured', value:fmt(a.submitted), pill:pctOf(a.submitted,a.landing)+' of landed', note:'service_booking_confirmed', accent:'#f59e0b', icon:'cart'}),
+      ufStat({label:'Consultation Booked', value:fmt(a.submitted), pill:pctOf(a.submitted,a.landing)+' of landed', note:'service_booking_confirmed', accent:'#f59e0b', icon:'cart'}),
       ufStat({label:'Paid Order', value:fmt(a.orders), pill:'CVR '+cvr+'%', note:"AED 1,350 · Sab's backend (long cycle)", accent:'#22c55e', icon:'check', good:true})
     ].join('');
     return;
@@ -1679,9 +1679,9 @@ function renderFunnelPyramid(svc, range) {
     const a = aggWallpaper(range);
     const steps = [
       { label:'Home Page Viewed', event:'page_view · /en, /ar', users:a.landing, meta:'Landed on Wallpaper homepage' },
-      { label:'Saw Designs', event:'view_item_list', users:a.viewList, meta:'Wallpaper categories rendered' },
-      { label:'Reached Booking Flow', event:'page_view · /en/booking', users:a.bookingFlow, meta:`Direct ${a.bookingDirect} · Estimator ${a.bookingEstimator}` },
-      { label:'Lead Captured', event:'service_booking_confirmed', users:a.submitted, meta:'Free home visit booked' },
+      { label:'Viewed Wallpaper List', event:'view_item_list', users:a.viewList, meta:'Wallpaper categories rendered' },
+      { label:'Address Page', event:'page_view · /en/booking', users:a.bookingFlow, meta:`Direct ${a.bookingDirect} · Estimator ${a.bookingEstimator}` },
+      { label:'Consultation Booked', event:'service_booking_confirmed', users:a.submitted, meta:'Free home visit booked' },
       { label:'Paid Order', event:'backend dashboard ✓', users:a.orders, meta:`AED 1,350 (long cycle — lead → paid takes weeks)` }
     ];
     wrap.innerHTML = renderPyramidLayout(steps);
@@ -1869,10 +1869,10 @@ function renderFunnelRevenue(svc, range) {
     const leadToPaidPct = M.leads ? (M.totalOrders/M.leads*100).toFixed(1) : '0.0';
     grid.innerHTML = `
       <div class="rev-mix-block">
-        <div class="rm-title">Lead-to-Paid Funnel</div>
-        <div class="rm-row"><span class="rm-label">Free home visits booked</span><div class="rm-bar"><div class="rm-bar-fill" style="width:100%"></div></div><span class="rm-val">${M.leads} leads</span></div>
+        <div class="rm-title">Consultation-to-Paid Funnel</div>
+        <div class="rm-row"><span class="rm-label">Consultations booked (free home visits)</span><div class="rm-bar"><div class="rm-bar-fill" style="width:100%"></div></div><span class="rm-val">${M.leads} booked</span></div>
         <div class="rm-row"><span class="rm-label">Paid orders confirmed</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${M.leads ? (M.totalOrders/M.leads*100) : 0}%"></div></div><span class="rm-val">${M.totalOrders} paid · AED ${M.totalRev.toLocaleString()}</span></div>
-        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Long sales cycle — only ${leadToPaidPct}% of leads have converted to paid in the visible window. Home visits typically take weeks to convert.</div>
+        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Long sales cycle — only ${leadToPaidPct}% of consultations have converted to paid in the visible window. Home visits typically take weeks to convert.</div>
       </div>
       <div class="rev-mix-block">
         <div class="rm-title">Country Split</div>
@@ -1986,9 +1986,9 @@ function renderFunnelFindings(svc, range) {
     el.innerHTML = `
       <div class="uf-finding warn"><strong>Estimator route dominates (${estimatorShare}% of booking flow)</strong><span>${fmt(a.bookingEstimator)} users opened the price estimator vs ${fmt(a.bookingDirect)} who took the direct "Book a Free Consultation" route. Users want to see the price before committing.</span></div>
       <div class="uf-finding"><strong>Wall measurement engagement: ${wallEngagement}% of estimator users</strong><span>${fmt(a.wallMeas)} users entered wall dimensions out of ${fmt(a.bookingEstimator)} who opened the estimator. The estimator is sticky — once they engage with walls they're closer to converting.</span></div>
-      <div class="uf-finding warn"><strong>Booking Flow → Lead Captured: ${dropBookingToLead}% drop</strong><span>${fmt(a.bookingFlow-a.submitted)} users reached the booking flow but never clicked Book a Free Home Visit. Biggest leak.</span></div>
-      <div class="uf-finding"><strong>Lead-to-paid is a long cycle (${a.submitted} leads → ${a.orders} paid in window)</strong><span>Wallpaper is a high-AOV consultation-first service. Most leads convert weeks later (after home visit + measurement). The single visible paid order doesn't reflect lead quality — track cohorts over 30-60 days for true lead-to-paid CVR.</span></div>
-      <div class="uf-finding"><strong>Lead CVR: ${cvrLead}% · Paid CVR: ${cvrPaid}%</strong><span>${a.submitted} consultations booked + ${a.orders} paid orders from ${fmt(a.landing)} landings. AOV AED 1,350.</span></div>`;
+      <div class="uf-finding warn"><strong>Address Page → Consultation Booked: ${dropBookingToLead}% drop</strong><span>${fmt(a.bookingFlow-a.submitted)} users reached the Address Page but never clicked Book a Free Home Visit. Biggest leak.</span></div>
+      <div class="uf-finding"><strong>Consultation-to-paid is a long cycle (${a.submitted} booked → ${a.orders} paid in window)</strong><span>Wallpaper is a high-AOV consultation-first service. Most consultations convert weeks later (after home visit + measurement). The single visible paid order doesn't reflect consultation quality — track cohorts over 30-60 days for true consultation-to-paid CVR.</span></div>
+      <div class="uf-finding"><strong>Consultation CVR: ${cvrLead}% · Paid CVR: ${cvrPaid}%</strong><span>${a.submitted} consultations booked + ${a.orders} paid orders from ${fmt(a.landing)} landings. AOV AED 1,350.</span></div>`;
     return;
   }
   if (isGearService(svc)) {
@@ -2171,20 +2171,23 @@ const WALLPAPER_STAGES = [
     { e: 'page_view__landing',                label: 'page_view (Homepage — /en, /ar)',                          step: '1. Home Page Viewed' }
   ]},
   { stage: 'Stage 2 — Browse', events: [
-    { e: 'view_item_list',                    label: 'view_item_list (Wallpaper categories rendered)',           step: '2. Saw Designs' }
+    { e: 'view_item_list',                    label: 'view_item_list (Wallpaper categories rendered)',           step: '2. Viewed Wallpaper List' }
   ]},
-  { stage: 'Stage 3 — Booking Flow', events: [
+  { stage: 'Stage 3 — Engagement', events: [
+    { e: 'whatsapp_click',                    label: 'WhatsApp click (link_domain = api.whatsapp.com)',          step: '(engagement)' }
+  ]},
+  { stage: 'Stage 4 — Address Page', events: [
     { e: 'booking_started',                   label: 'booking_started (clicked Book a Free Consultation on landing)', step: '(Direct route trigger)' },
-    { e: 'page_view__booking_direct',         label: 'page_view (Direct route — /en/booking, no query)',         step: '3. Reached Booking (Direct)' },
-    { e: 'page_view__booking_estimator',      label: 'page_view (Estimator route — /en/booking?packageId=*)',    step: '3. Reached Booking (Estimator)' },
-    { e: 'wall_measurement_entered',          label: 'wall_measurement_entered (engaged with estimator)',        step: '(estimator engagement)' },
-    { e: 'additional_wall_added',             label: 'additional_wall_added (multi-wall designs)',                step: '(estimator deep engagement)' }
+    { e: 'page_view__booking_direct',         label: 'page_view (Direct route — /en/booking, no query)',         step: '4. Address Page (Direct)' },
+    { e: 'page_view__booking_estimator',      label: 'page_view (Estimator route — /en/booking?packageId=*)',    step: '4. Address Page (Estimator)' },
+    { e: 'wall_measurement_entered',          label: 'wall_measurement_entered (entered wall dimensions)',       step: '(estimator engagement)' },
+    { e: 'additional_wall_added',             label: 'additional_wall_added (+ Add another wall clicked)',       step: '(multi-wall designs)' }
   ]},
-  { stage: 'Stage 4 — Lead Capture', events: [
-    { e: 'service_booking_confirmed',         label: 'service_booking_confirmed (free home visit booked)',       step: '4. Lead Captured' }
+  { stage: 'Stage 5 — Consultation Booked', events: [
+    { e: 'service_booking_confirmed',         label: 'service_booking_confirmed (free home visit booked)',       step: '5. Consultation Booked' }
   ]},
-  { stage: 'Stage 5 — Paid Order (long cycle)', events: [
-    { e: 'order_confirmed',                   label: "Order Confirmed (Sab's backend ✓ — lead → paid takes weeks)", step: "5. Paid Order ✓ — source of truth" }
+  { stage: 'Stage 6 — Paid Order (long cycle)', events: [
+    { e: 'order_confirmed',                   label: "Order Confirmed (Sab's backend ✓ — lead → paid takes weeks)", step: "6. Paid Order ✓ — source of truth" }
   ]}
 ];
 

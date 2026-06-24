@@ -378,7 +378,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
     <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">All GA4 events for the selected service + period, in logical funnel order. Step names match the pyramid above where applicable.</p>
     <div style="overflow-x:auto;">
       <table class="data-table">
-        <thead><tr><th>Stage</th><th>Funnel Step (if applicable)</th><th>Event</th><th class="num">Users</th><th class="num">Events</th><th class="num">Events / User</th></tr></thead>
+        <thead><tr><th>Stage</th><th>Funnel Step (if applicable)</th><th>Event</th><th class="num">Users (% of landing)</th><th class="num">Events (% of landing)</th><th class="num">Events / User</th></tr></thead>
         <tbody id="funnel-breakdown-tbody"></tbody>
       </table>
     </div>
@@ -1540,7 +1540,7 @@ function renderFunnelTopStats(svc, range) {
       ufStat({label:'WhatsApp Clicks', value:fmt(a.whatsapp), pill:pctOf(a.whatsapp,a.landing)+' of landed', note:'click · api.whatsapp.com', accent:'#16a34a', icon:'chat'}),
       ufStat({label:'Wall Measurement', value:fmt(a.wallMeas), pill:pctOf(a.wallMeas,a.landing)+' of landed', note:'engaged with estimator', accent:'#0ea5e9', icon:'eye'}),
       ufStat({label:'Consultation Booked', value:fmt(a.submitted), pill:pctOf(a.submitted,a.landing)+' of landed', note:'service_booking_confirmed', accent:'#f59e0b', icon:'cart'}),
-      ufStat({label:'Paid Order', value:fmt(a.orders), pill:'CVR '+cvr+'%', note:"AED 1,350 · Sab's backend (long cycle)", accent:'#22c55e', icon:'check', good:true})
+      ufStat({label:'Purchased', value:fmt(a.orders), pill:'CVR '+cvr+'%', note:"AED 1,350 · Sab's backend (long cycle)", accent:'#22c55e', icon:'check', good:true})
     ].join('');
     return;
   }
@@ -1594,7 +1594,7 @@ function renderFunnelTopStats(svc, range) {
       ufStat({label:'Book Now', value:fmt(a.book), pill:pctOf(a.book,a.landing)+' of landed', accent:'#6366f1', icon:'book'}),
       ufStat({label:'WhatsApp Clicks', value:fmt(waAll), pill:pctOf(waAll,a.landing)+' of landed', note:fmt(waTop)+' top + '+fmt(waBot)+' support', accent:'#16a34a', icon:'chat'}),
       ufStat({label:'Proceed to Checkout', value:fmt(a.checkout), pill:pctOf(a.checkout,a.landing)+' of landed', accent:'#f59e0b', icon:'cart'}),
-      ufStat({label:'Order Confirmed', value:fmt(a.orders), pill:'CVR '+cvr+'%', note:'end-to-end', accent:'#22c55e', icon:'check', good:true})
+      ufStat({label:'Purchased', value:fmt(a.orders), pill:'CVR '+cvr+'%', note:'end-to-end', accent:'#22c55e', icon:'check', good:true})
     ].join('');
   } else {
     const ag = aggGeneric(svc, range);
@@ -1682,7 +1682,7 @@ function renderFunnelPyramid(svc, range) {
       { label:'Viewed Wallpaper List', event:'view_item_list', users:a.viewList, meta:'Wallpaper categories rendered' },
       { label:'Address Page', event:'page_view · /en/booking', users:a.bookingFlow, meta:`Direct ${a.bookingDirect} · Estimator ${a.bookingEstimator}` },
       { label:'Consultation Booked', event:'service_booking_confirmed', users:a.submitted, meta:'Free home visit booked' },
-      { label:'Paid Order', event:'backend dashboard ✓', users:a.orders, meta:`AED 1,350 (long cycle — lead → paid takes weeks)` }
+      { label:'Purchased', event:'backend dashboard ✓', users:a.orders, meta:`AED 1,350 (long cycle — lead → paid takes weeks)` }
     ];
     wrap.innerHTML = renderPyramidLayout(steps);
     return;
@@ -1724,7 +1724,7 @@ function renderFunnelPyramid(svc, range) {
       { label:'Address Page', event:'form_start · on /booking', users:a.addr, meta:'Started filling address form (booking pages only)' },
       { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reached Review screen with itemized total' },
       { label:'Proceed to Checkout', event:'place_order (batched)', users:a.checkout, meta:'Clicked Place Order — 4 events fire together' },
-      { label:'Order Confirmed', event:'Sab\'s backend dashboard ✓', users:a.orders, meta:'Backend truth; GA4 purchase undercounts ~50%' }
+      { label:'Purchased', event:'Sab\'s backend dashboard ✓', users:a.orders, meta:'Backend truth; GA4 purchase undercounts ~50%' }
     ];
     wrap.innerHTML = renderPyramidLayout(steps);
   } else {
@@ -2295,6 +2295,12 @@ function renderFunnelBreakdown(svc, range) {
                : isWall     ? WALLPAPER_STAGES
                : GENERIC_STAGES;
   const tbody = document.getElementById('funnel-breakdown-tbody');
+  // Landing baseline for % calculation (page_view on landing for all services)
+  const landingRow = ag['page_view__landing'] || ag['page_view'] || { c: 0, u: 0 };
+  const landingUsers = landingRow.u || 0;
+  const landingEvents = landingRow.c || 0;
+  const pctU = (n) => landingUsers > 0 ? ' <span style="color:#94a3b8;font-size:10.5px;">(' + (n/landingUsers*100).toFixed(1) + '%)</span>' : '';
+  const pctE = (n) => landingEvents > 0 ? ' <span style="color:#94a3b8;font-size:10.5px;">(' + (n/landingEvents*100).toFixed(1) + '%)</span>' : '';
   let html = '';
   stages.forEach(stg => {
     const stageRows = stg.events.filter(ev => ag[ev.e] && (ag[ev.e].c > 0 || ag[ev.e].u > 0));
@@ -2310,8 +2316,8 @@ function renderFunnelBreakdown(svc, range) {
         <td>${idx === 0 ? '<strong>'+stg.stage+'</strong>' : ''}</td>
         <td>${stepHtml}</td>
         <td><code>${ev.label || ev.e}</code></td>
-        <td class="num">${d.u.toLocaleString()}</td>
-        <td class="num">${d.c.toLocaleString()}</td>
+        <td class="num">${d.u.toLocaleString()}${pctU(d.u)}</td>
+        <td class="num">${d.c.toLocaleString()}${pctE(d.c)}</td>
         <td class="num">${epu}</td>
       </tr>`;
     });

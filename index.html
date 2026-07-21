@@ -1628,7 +1628,6 @@ function renderFunnelTopStats(svc, range) {
       ufStat({label:'Enquiry Opened', value:fmt(a.enquiryStarted), pill:pctOf(a.enquiryStarted,a.landing)+' of landed', note:'enquiry_started', accent:'#6366f1', icon:'book'}),
       ufStat({label:'Enquiry Submitted', value:fmt(a.lead), pill:pctOf(a.lead,a.landing)+' of landed', note:'generate_lead ✓', accent:'#16a34a', icon:'check', good:true}),
       ufStat({label:'WhatsApp', value:fmt(a.whatsapp), pill:pctOf(a.whatsapp,a.landing)+' of landed', note:'api.whatsapp.com clicks', accent:'#0ea5e9', icon:'chat'}),
-      ufStat({label:'Address Page', value:fmt(a.bookingStarted), pill:pctOf(a.bookingStarted,a.landing)+' of landed', note:'booking_started', accent:'#f59e0b', icon:'book'}),
       ufStat({label:'Booking Submitted', value:fmt(a.placeOrder), pill:pctOf(a.placeOrder,a.landing)+' of landed', note:'place_order (batched)', accent:'#f97316', icon:'cart'}),
       ufStat({label:'Purchased', value:fmt(a.orders), pill:'backend ✓', note:(a.orders>0?'paid bookings in period':'0 in period · 2 lifetime'), accent:'#22c55e', icon:'check', good:true})
     ].join('');

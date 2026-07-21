@@ -345,6 +345,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-primar
         <button id="funnel-period-apr" onclick="setPeriod(this,'2026-04')" style="display:none;">Apr</button>
         <button onclick="setPeriod(this,'2026-05')">May</button>
         <button onclick="setPeriod(this,'2026-06')">Jun</button>
+        <button onclick="setPeriod(this,'2026-07')">Jul</button>
         <button onclick="setPeriod(this,'custom')">Custom</button>
       </div>
     </div>
@@ -1211,17 +1212,30 @@ const WALLPAPER_MIX = {
 // Party Planning — backend orders CSV (party-planner-orders-2026-07-21.csv, LIFETIME = 2 paid bookings,
 // both predating the GA window: Silver Mar 10 UAE, Gold May 1 Saudi Arabia)
 const PARTY_MIX = {
-  gold:   { count: 1, rev: 4400.00, pkg: 4050.00 },   // PP-915103 Gold Celebration · Saudi Arabia · New · 2026-05-01
-  silver: { count: 1, rev: 3590.00, pkg: 2790.00 },   // PP-915101 Silver Celebration · UAE · New · 2026-03-10
-  totalOrders: 2,
-  totalRev: 7990.00,   // 4400 + 3590 (AOV 3,995)
-  uae: 1, ksa: 1,      // UAE (Silver) + Saudi Arabia (Gold)
-  newCust: 2, returning: 0,
-  // All-period landing locale split (users) — from GA landing report; single page_view__landing event carries no
-  // per-locale dimension, so these are stored as the authoritative all-window totals for the meta labels.
+  // Backend paid orders (lifetime). date = paid date (YYYYMMDD); period views count orders by this date.
+  orders: [
+    { id:'PP-915103', pkg:'Gold Celebration',   rev:4400.00, price:4050.00, country:'Saudi Arabia', cust:'New', date:'20260501' },
+    { id:'PP-915101', pkg:'Silver Celebration', rev:3590.00, price:2790.00, country:'UAE',           cust:'New', date:'20260310' }
+  ],
+  lifetimeOrders: 2,
+  // All-period landing locale split (users) — single page_view__landing event carries no per-locale dimension,
+  // so these are the authoritative all-window totals for the meta labels.
   landingUae: 3013,    // /en 2066 + /ar 947
   landingKsa: 3718     // /ar-SA 2725 + /en-SA 993  (55.2% KSA)
 };
+// Backend orders whose paid date falls within [range[0], range[1]] (YYYYMMDD), with derived aggregates.
+function partyOrdersInRange(range) {
+  const inR = PARTY_MIX.orders.filter(o => o.date >= range[0] && o.date <= range[1]);
+  const sum = (f) => inR.reduce((s,o)=>s+f(o), 0);
+  return {
+    list: inR, count: inR.length, rev: sum(o=>o.rev),
+    gold:   inR.filter(o=>o.pkg.startsWith('Gold')).length,   goldRev:   sum(o=>o.pkg.startsWith('Gold') ? o.rev : 0),
+    silver: inR.filter(o=>o.pkg.startsWith('Silver')).length, silverRev: sum(o=>o.pkg.startsWith('Silver') ? o.rev : 0),
+    uae: inR.filter(o=>o.country==='UAE').length, ksa: inR.filter(o=>o.country!=='UAE').length,
+    newCust: inR.filter(o=>o.cust==='New').length, returning: inR.filter(o=>o.cust!=='New').length,
+    aov: inR.length ? Math.round(sum(o=>o.rev)/inR.length) : 0
+  };
+}
 
 const SERVICE_DATA_RANGES = {
   'Babysitter / Nanny': { min: '2026-05-12', max: '2026-06-08' },
@@ -1302,6 +1316,7 @@ function getFunnelDateRange() {
   if (currentFunnelPeriod === '2026-04') return [clampStr('20260401', rMin, rMax), clampStr('20260430', rMin, rMax)];
   if (currentFunnelPeriod === '2026-05') return [clampStr('20260501', rMin, rMax), clampStr('20260531', rMin, rMax)];
   if (currentFunnelPeriod === '2026-06') return [clampStr('20260601', rMin, rMax), clampStr('20260630', rMin, rMax)];
+  if (currentFunnelPeriod === '2026-07') return [clampStr('20260701', rMin, rMax), clampStr('20260731', rMin, rMax)];
   return [rMin, rMax]; // 'all'
 }
 
@@ -1512,7 +1527,7 @@ function aggParty(range) {
     summary:         u('booking_summary_viewed'),
     placeOrder:      u('place_order'),
     whatsapp:        u('whatsapp'),
-    orders:          PARTY_MIX.totalOrders   // backend truth: 2 lifetime paid bookings
+    orders:          partyOrdersInRange(range).count   // backend paid orders IN this period (0 if none)
   };
 }
 function aggKids(range) {
@@ -1613,9 +1628,9 @@ function renderFunnelTopStats(svc, range) {
       ufStat({label:'Enquiry Opened', value:fmt(a.enquiryStarted), pill:pctOf(a.enquiryStarted,a.landing)+' of landed', note:'enquiry_started', accent:'#6366f1', icon:'book'}),
       ufStat({label:'Enquiry Submitted', value:fmt(a.lead), pill:pctOf(a.lead,a.landing)+' of landed', note:'generate_lead ✓', accent:'#16a34a', icon:'check', good:true}),
       ufStat({label:'WhatsApp', value:fmt(a.whatsapp), pill:pctOf(a.whatsapp,a.landing)+' of landed', note:'api.whatsapp.com clicks', accent:'#0ea5e9', icon:'chat'}),
-      ufStat({label:'Booking Started', value:fmt(a.bookingStarted), pill:pctOf(a.bookingStarted,a.landing)+' of landed', note:'booking_started', accent:'#f59e0b', icon:'book'}),
+      ufStat({label:'Address Page', value:fmt(a.bookingStarted), pill:pctOf(a.bookingStarted,a.landing)+' of landed', note:'booking_started', accent:'#f59e0b', icon:'book'}),
       ufStat({label:'Booking Submitted', value:fmt(a.placeOrder), pill:pctOf(a.placeOrder,a.landing)+' of landed', note:'place_order (batched)', accent:'#f97316', icon:'cart'}),
-      ufStat({label:'Purchased', value:fmt(a.orders), pill:'backend ✓', note:'2 lifetime paid bookings', accent:'#22c55e', icon:'check', good:true})
+      ufStat({label:'Purchased', value:fmt(a.orders), pill:'backend ✓', note:(a.orders>0?'paid bookings in period':'0 in period · 2 lifetime'), accent:'#22c55e', icon:'check', good:true})
     ].join('');
     return;
   }
@@ -1688,10 +1703,10 @@ function renderFunnelTopStats(svc, range) {
 
 function pctOf(a, b) { return b > 0 ? ((a/b)*100).toFixed(2)+'%' : '—'; }
 
-function buildPyramidSVG(steps) {
-  // steps is array of 9 (or N) values; renders SVG inverted pyramid
+function buildPyramidSVG(steps, opts) {
+  // steps is array of N values; renders SVG inverted pyramid. opts.w / opts.h override size (defaults 600x495).
   const N = steps.length;
-  const TOP_W = 600, BOT_W = 100, H = 495;
+  const TOP_W = (opts && opts.w) || 600, BOT_W = Math.round(((opts && opts.w) || 600) / 6), H = (opts && opts.h) || 495;
   const layerH = H / N;
   const narrow = (TOP_W - BOT_W) / N;
   const colors = ['#2563eb','#0891b2','#0d9488','#0f766e','#a16207','#c2410c','#b91c1c','#15803d','#166534'];
@@ -1713,9 +1728,10 @@ function buildPyramidSVG(steps) {
     const cy = (ty+by)/2 + 5;
     const fs = N <= 7 ? 16 : (i < 4 ? 16 : i < 7 ? 13 : 11);
     polys += `<polygon points="${pts}" fill="url(#gFnl${i})" stroke="#fff" stroke-width="1.5"/>`;
-    polys += `<text x="300" y="${cy.toFixed(0)}" text-anchor="middle" font-size="${fs}" fill="#fff" font-weight="800" style="text-shadow:0 1px 2px rgba(0,0,0,0.4);">${steps[i].label}</text>`;
+    polys += `<text x="${(TOP_W/2).toFixed(0)}" y="${cy.toFixed(0)}" text-anchor="middle" font-size="${fs}" fill="#fff" font-weight="800" style="text-shadow:0 1px 2px rgba(0,0,0,0.4);">${steps[i].label}</text>`;
   }
-  return `<svg class="pyr-svg" viewBox="0 0 ${TOP_W} ${H}" preserveAspectRatio="xMidYMid meet" style="height:${H}px;">${defs}${polys}</svg>`;
+  const wStyle = (opts && opts.w) ? `width:${TOP_W}px;` : '';  // party funnels pass explicit size; override the CSS .pyr-svg width:600px
+  return `<svg class="pyr-svg" viewBox="0 0 ${TOP_W} ${H}" preserveAspectRatio="xMidYMid meet" style="${wStyle}height:${H}px;">${defs}${polys}</svg>`;
 }
 
 function renderFunnelPyramid(svc, range) {
@@ -1773,12 +1789,13 @@ function renderFunnelPyramid(svc, range) {
       { label:'Enquiry Started', event:'enquiry_started', users:a.enquiryStarted, meta:"Tapped 'Contact Our Planner'" },
       { label:'Lead Submitted', event:'generate_lead ✓', users:a.lead, meta:'Enquiry submitted — team follows up' }
     ];
+    const purchasedMeta = a.orders > 0 ? `${a.orders} paid in this period` : 'No paid orders in this period (2 lifetime, pre-window)';
     const bookingSteps = [
       { label:'Landed', event:'page_view · locale roots', users:a.landing, meta:landMeta },
       { label:'Reached Booking', event:'page_view · /{package} paths', users:a.reachedBooking, meta:'Opened a package/booking page' },
-      { label:'Booking Started', event:'booking_started', users:a.bookingStarted, meta:'Started party-details form' },
+      { label:'Address Page', event:'booking_started', users:a.bookingStarted, meta:'Reached the party-details / address page' },
       { label:'Booking Submitted', event:'place_order (batched)', users:a.placeOrder, meta:'Clicked Proceed to Payment' },
-      { label:'Purchased', event:'backend dashboard ✓', users:a.orders, meta:'2 lifetime paid bookings — see note' }
+      { label:'Purchased', event:'backend dashboard ✓', users:a.orders, meta:purchasedMeta }
     ];
     const sub = document.getElementById('funnel-pyramid-sub');
     if (sub) sub.textContent = 'Two funnels: 🎯 Intent (enquiry) is the primary flow; 🛒 Booking (Dubai-only) is nascent. Left = event source · Step N; right = users, % of landed, drop-off.';
@@ -1884,9 +1901,8 @@ function renderPyramidLayout(steps) {
 // Party Planning renders TWO funnels (Intent + Booking) side-by-side. Reuses buildPyramidSVG and the
 // .pyr-side / .pyr-row / .pyr-svg-wrap classes, but each funnel is a self-contained block laid out in a
 // responsive grid so they sit side-by-side on wide screens and stack on narrow ones.
-function partyFunnelBlock(steps, heading) {
+function partyFunnelBlock(steps, heading, W, H) {
   const N = steps.length;
-  const H = 495;
   const layerH = H / N;
   const sideStyle = `grid-template-rows: repeat(${N}, ${layerH}px); height: ${H}px;`;
   const top = steps[0].users || 1;
@@ -1913,20 +1929,23 @@ function partyFunnelBlock(steps, heading) {
       <div class="row-meta">${s.meta||''}</div>
     </div>`;
   });
-  // Per-funnel 3-col grid (labels · SVG · data). Narrower than the single-funnel .pyr-wrap so two fit side-by-side.
-  return `<div style="min-width:0;">
-    <div style="font-size:13px;font-weight:800;color:var(--text-primary);margin:0 0 6px;">${heading}</div>
-    <div class="pyr-wrap" style="grid-template-columns:130px minmax(0,1fr) 180px; column-gap:10px; max-width:none; margin:8px auto 0;">
+  // Fixed-size 3-col grid (labels · SVG(W) · data). Block width = 150 + W + 190 + gaps; left-aligned so a small
+  // Intent funnel visibly stays small and a taller Booking funnel sits below it.
+  return `<div style="max-width:${150 + W + 190 + 28}px; margin:0 0 4px;">
+    <div style="font-size:14px;font-weight:800;color:var(--text-primary);margin:0 0 8px;">${heading}</div>
+    <div class="pyr-wrap" style="grid-template-columns:150px ${W}px 190px; column-gap:14px; max-width:none; margin:0;">
       <div class="pyr-side left" style="${sideStyle}">${leftRows}</div>
-      <div class="pyr-svg-wrap pyr-party-svg" style="height:${H}px; align-self:center;">${buildPyramidSVG(steps)}</div>
+      <div class="pyr-svg-wrap" style="height:${H}px; align-self:center;">${buildPyramidSVG(steps, {w:W, h:H})}</div>
       <div class="pyr-side right" style="${sideStyle}">${rightRows}</div>
     </div>
   </div>`;
 }
 function renderPartyDualPyramid(intentSteps, bookingSteps) {
-  return `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:28px; align-items:start;">
-    ${partyFunnelBlock(intentSteps, '🎯 Intent Funnel (Enquiry)')}
-    ${partyFunnelBlock(bookingSteps, '🛒 Booking Funnel (Dubai-only)')}
+  // Stacked, not side-by-side. Intent is deliberately small (3 steps); Booking is the taller detailed funnel.
+  return `<div>
+    ${partyFunnelBlock(intentSteps, '🎯 Intent Funnel (Enquiry)', 340, 260)}
+    <div style="height:1px;background:var(--border,#e5e7eb);margin:22px 0;"></div>
+    ${partyFunnelBlock(bookingSteps, '🛒 Booking Funnel (Dubai-only)', 560, 460)}
   </div>`;
 }
 
@@ -2035,33 +2054,37 @@ function renderFunnelRevenue(svc, range) {
     return;
   }
   if (isPartyService(svc)) {
-    // Backend orders are LIFETIME (2 paid bookings), independent of the GA date range — always show.
     card.style.display = '';
-    const M = PARTY_MIX;
-    const total = M.totalOrders;
-    const goldPct = total ? Math.round(M.gold.count/total*100) : 0;
-    const silverPct = total ? Math.round(M.silver.count/total*100) : 0;
-    const newPct = (M.newCust+M.returning) ? Math.round(M.newCust/(M.newCust+M.returning)*100) : 0;
-    const retPct = 100 - newPct;
-    const aov = total ? Math.round(M.totalRev/total) : 0;
+    const P = partyOrdersInRange(range);
+    if (P.count === 0) {
+      grid.innerHTML = `<div class="rev-mix-block" style="grid-column:1/-1;">
+        <div class="rm-title">Paid Orders (selected period)</div>
+        <div style="font-size:12px;color:#374151;padding:2px 0 4px;">No paid bookings in this period.</div>
+        <div style="font-size:11px;color:#92400e;margin-top:6px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Backend has 2 lifetime paid bookings — Silver (UAE, Mar 10) + Gold (Saudi Arabia, May 1) — both predating the GA data window (May 21 onward). GA logged 2 place_orders (Jun 4) not in the backend export (empty transaction_id). Booking flow is nascent — enquiry is the primary flow.</div>
+      </div>`;
+      return;
+    }
+    const goldPct = Math.round(P.gold/P.count*100), silverPct = Math.round(P.silver/P.count*100);
+    const newPct = Math.round(P.newCust/P.count*100), retPct = 100 - newPct;
+    const uaePct = Math.round(P.uae/P.count*100), ksaPct = 100 - uaePct;
     grid.innerHTML = `
       <div class="rev-mix-block">
         <div class="rm-title">Package Mix (Vol vs Revenue)</div>
-        <div class="rm-row"><span class="rm-label">Gold Celebration</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${goldPct}%"></div></div><span class="rm-val">${M.gold.count} · AED ${M.gold.rev.toLocaleString()}</span></div>
-        <div class="rm-row"><span class="rm-label">Silver Celebration</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${silverPct}%"></div></div><span class="rm-val">${M.silver.count} · AED ${M.silver.rev.toLocaleString()}</span></div>
-        <div style="font-size:11px;color:#374151;margin-top:8px;background:#f3f4f6;padding:6px 8px;border-radius:4px;">Total AED ${M.totalRev.toLocaleString()} across ${total} lifetime orders · AOV AED ${aov.toLocaleString()}.</div>
+        <div class="rm-row"><span class="rm-label">Gold Celebration</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${goldPct}%"></div></div><span class="rm-val">${P.gold} · AED ${P.goldRev.toLocaleString()}</span></div>
+        <div class="rm-row"><span class="rm-label">Silver Celebration</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${silverPct}%"></div></div><span class="rm-val">${P.silver} · AED ${P.silverRev.toLocaleString()}</span></div>
+        <div style="font-size:11px;color:#374151;margin-top:8px;background:#f3f4f6;padding:6px 8px;border-radius:4px;">AED ${P.rev.toLocaleString()} across ${P.count} paid order${P.count>1?'s':''} in period · AOV AED ${P.aov.toLocaleString()}.</div>
       </div>
       <div class="rev-mix-block">
         <div class="rm-title">Country Split</div>
-        <div class="rm-row"><span class="rm-label">🇸🇦 Saudi Arabia</span><div class="rm-bar"><div class="rm-bar-fill" style="width:50%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${M.ksa} · 50%</span></div>
-        <div class="rm-row"><span class="rm-label">🇦🇪 UAE</span><div class="rm-bar"><div class="rm-bar-fill" style="width:50%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${M.uae} · 50%</span></div>
-        <div style="font-size:11px;color:#1e40af;margin-top:8px;background:#dbeafe;padding:6px 8px;border-radius:4px;">One paid order each: Gold (Saudi Arabia) + Silver (UAE). Booking flow itself is Dubai-only.</div>
+        <div class="rm-row"><span class="rm-label">🇸🇦 Saudi Arabia</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${ksaPct}%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${P.ksa} · ${ksaPct}%</span></div>
+        <div class="rm-row"><span class="rm-label">🇦🇪 UAE</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${uaePct}%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${P.uae} · ${uaePct}%</span></div>
+        <div style="font-size:11px;color:#1e40af;margin-top:8px;background:#dbeafe;padding:6px 8px;border-radius:4px;">Booking flow is Dubai-only; enquiry-sourced orders can come from any market.</div>
       </div>
       <div class="rev-mix-block">
         <div class="rm-title">Customer Type</div>
-        <div class="rm-row"><span class="rm-label">New</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${newPct}%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${M.newCust} · ${newPct}%</span></div>
-        <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${retPct}%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${M.returning} · ${retPct}%</span></div>
-        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Backend shows 2 lifetime paid bookings, both predating the GA window (Mar 10 + May 1). GA logged 2 place_orders (Jun 4) that are not in the backend export. Booking flow is nascent — enquiry is the primary flow.</div>
+        <div class="rm-row"><span class="rm-label">New</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${newPct}%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${P.newCust} · ${newPct}%</span></div>
+        <div class="rm-row"><span class="rm-label">Returning</span><div class="rm-bar"><div class="rm-bar-fill" style="width:${retPct}%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${P.returning} · ${retPct}%</span></div>
+        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Paid orders shown for the selected period only. 2 lifetime orders total; GA place_orders don't fully reconcile to backend (empty transaction_id).</div>
       </div>`;
     return;
   }
@@ -2397,7 +2420,7 @@ const PARTY_STAGES = [
   ]},
   { stage: 'Stage 3 — Booking (Dubai-only)', events: [
     { e: 'page_view__booking',     label: 'page_view (Reached booking — /{package} paths)',             step: '2. Reached Booking' },
-    { e: 'booking_started',        label: 'booking_started (started party-details form)',               step: '3. Booking Started' },
+    { e: 'booking_started',        label: 'booking_started (reached party-details / address page)',      step: '3. Address Page' },
     { e: 'booking_summary_viewed', label: 'booking_summary_viewed (co-fires with booking_started)',     step: '(co-fires with booking_started)' },
     { e: 'place_order',            label: 'place_order (clicked Proceed to Payment)',                   step: '4. Booking Submitted' }
   ]},
@@ -2504,7 +2527,7 @@ function renderFunnelBreakdown(svc, range) {
            : aggGeneric(svc, range);
   // Party Planning: backend paid orders (2 lifetime) are not a GA event — inject the row so the
   // conversion stage renders (mirrors how other services carry order_confirmed in their event arrays).
-  if (isParty) ag['order_confirmed'] = { c: PARTY_MIX.totalOrders, u: PARTY_MIX.totalOrders };
+  if (isParty) { const _po = partyOrdersInRange(range).count; ag['order_confirmed'] = { c: _po, u: _po }; }
   const stages = isNannies  ? NANNIES_STAGES
                : isKids     ? KIDS_STAGES
                : isGear     ? GEAR_STAGES

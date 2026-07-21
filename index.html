@@ -1931,7 +1931,7 @@ function partyFunnelBlock(steps, heading, W, H) {
   });
   // Fixed-size 3-col grid (labels · SVG(W) · data). Block width = 150 + W + 190 + gaps; left-aligned so a small
   // Intent funnel visibly stays small and a taller Booking funnel sits below it.
-  return `<div style="max-width:${150 + W + 190 + 28}px; margin:0 0 4px;">
+  return `<div style="max-width:${150 + W + 190 + 28}px; margin:0 auto 4px;">
     <div style="font-size:14px;font-weight:800;color:var(--text-primary);margin:0 0 8px;">${heading}</div>
     <div class="pyr-wrap" style="grid-template-columns:150px ${W}px 190px; column-gap:14px; max-width:none; margin:0;">
       <div class="pyr-side left" style="${sideStyle}">${leftRows}</div>

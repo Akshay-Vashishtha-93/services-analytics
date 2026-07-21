@@ -1195,8 +1195,24 @@ const TUTOR_EVENTS = [{"d":"20260521","e":"booking_started","c":5,"u":5},{"d":"2
 // Landing locale split (users) — single page_view__landing event carries no per-locale dimension, so these are the authoritative all-window totals. UAE only (Dubai) — no KSA locales exist.
 const TUTOR_MIX = {
   landingEn: 1409,   // /en
-  landingAr: 845     // /ar  (UAE only — /en 1409 + /ar 845 = 2254; no KSA)
+  landingAr: 845,    // /ar  (UAE only — /en 1409 + /ar 845 = 2254; no KSA)
+  // Backend paid bookings (lifetime). date = paid date (YYYYMMDD); period views count by this date.
+  orders: [
+    { id:'TAH-915103', pkg:'Weekly Plan', rev:570.00, country:'United Arab Emirates', cust:'New', date:'20260429' }
+  ],
+  lifetimeOrders: 1
 };
+// Backend orders whose paid date falls within [range[0], range[1]] (YYYYMMDD).
+function tutorOrdersInRange(range) {
+  const inR = TUTOR_MIX.orders.filter(o => o.date >= range[0] && o.date <= range[1]);
+  const sum = (f) => inR.reduce((s,o)=>s+f(o), 0);
+  return {
+    list: inR, count: inR.length, rev: sum(o=>o.rev),
+    uae: inR.filter(o=>o.country==='United Arab Emirates').length,
+    newCust: inR.filter(o=>o.cust==='New').length,
+    aov: inR.length ? Math.round(sum(o=>o.rev)/inR.length) : 0
+  };
+}
 
 // Order-mix (Nannies, period-wide aggregate for now)
 const NANNIES_MIX = {
@@ -1664,7 +1680,8 @@ function aggTutor(range) {
     packageSel:     u('select_item__package'),
     formStart:      u('form_start'),
     summary:        u('booking_summary_viewed'),
-    purchased:      u('place_order'),              // 1 paid booking (GA); no backend shared
+    purchased:      tutorOrdersInRange(range).count, // backend paid bookings IN period (0 if none)
+    placeOrderGA:   u('place_order'),              // GA place_order (breakdown context)
     bookingStarted: u('booking_started'),          // double-fires — breakdown only, not a funnel step
     profileSel:     u('select_item__profile'),     // educator-profile clicks — engagement
     viewList:       u('view_item_list'),
@@ -1791,10 +1808,10 @@ function renderFunnelTopStats(svc, range) {
     el.innerHTML = [
       ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'page_view · locale roots', accent:'#3b82f6', icon:'eye'}),
       ufStat({label:'Enquiry Form', value:fmt(a.enqForm), pill:pctOf(a.enqForm,a.landing)+' of landed', note:'page_view · /request-consultation', accent:'#6366f1', icon:'book'}),
-      ufStat({label:'Enquiry Submitted', value:fmt(a.enqSubmit), pill:pctOf(a.enqSubmit,a.landing)+' of landed', note:'/request-consultation/success', accent:'#f59e0b', icon:'cart'}),
+      ufStat({label:'Enquiry Submitted', value:fmt(a.enqSubmit), pill:pctOf(a.enqSubmit,a.landing)+' of landed', note:'/success · new, not in GA yet', accent:'#f59e0b', icon:'cart'}),
       ufStat({label:'Reached Booking', value:fmt(a.reachedBooking), pill:pctOf(a.reachedBooking,a.landing)+' of landed', note:'page_view · /booking', accent:'#0ea5e9', icon:'book'}),
       ufStat({label:'Package Selected', value:fmt(a.packageSel), pill:pctOf(a.packageSel,a.landing)+' of landed', note:'select_item · tutor_packages', accent:'#f97316', icon:'cart'}),
-      ufStat({label:'Purchased', value:fmt(a.purchased), pill:'backend N/A', note:'place_order (GA)', accent:'#22c55e', icon:'check', good:true})
+      ufStat({label:'Purchased', value:fmt(a.purchased), pill:'backend ✓', note:(a.purchased>0?'paid bookings in period':'0 in period · 1 lifetime'), accent:'#22c55e', icon:'check', good:true})
     ].join('');
     return;
   }
@@ -1996,15 +2013,15 @@ function renderFunnelPyramid(svc, range) {
     const enquirySteps = [
       { label:'Landed', event:'page_view · locale roots', users:a.landing, meta:landMeta },
       { label:'Enquiry Form Reached', event:'page_view · /request-consultation', users:a.enqForm, meta:"Reached 'Request a Free Consultation'" },
-      { label:'Enquiry Submitted ✓', event:'page_view · /request-consultation/success', users:a.enqSubmit, meta:'No /success page_views in window (no generate_lead exists)' }
+      { label:'Enquiry Submitted ✓', event:'page_view · /request-consultation/success', users:a.enqSubmit, meta:'Success event newly added — not in GA yet (0 so far)' }
     ];
+    const tutorPurMeta = a.purchased > 0 ? `${a.purchased} paid in this period` : 'No paid orders in this period (1 lifetime, pre-window)';
     const bookingSteps = [
       { label:'Landed', event:'page_view · locale roots', users:a.landing, meta:landMeta },
       { label:'Reached Booking', event:'page_view · /booking', users:a.reachedBooking, meta:"Clicked 'Book an Educator', reached wizard" },
       { label:'Package Selected', event:'select_item · tutor_packages', users:a.packageSel, meta:'Picked a learning plan' },
       { label:'Address Page', event:'form_start · tutor_at_home_booking', users:a.formStart, meta:'Started the address/details form' },
-      { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reviewed order' },
-      { label:'Purchased', event:'place_order / purchase', users:a.purchased, meta:'1 paid booking (GA); no backend shared' }
+      { label:'Purchased', event:'backend dashboard ✓', users:a.purchased, meta:tutorPurMeta }
     ];
     const sub = document.getElementById('funnel-pyramid-sub');
     if (sub) sub.textContent = 'Site rebranded "Educators at Home". Two funnels: 🎯 Enquiry (Request a Consultation) + 🛒 Booking (Book an Educator). Dubai-only, UAE traffic only. Left = event source · Step N; right = users, % of landed, drop-off.';
@@ -2316,11 +2333,31 @@ function renderFunnelRevenue(svc, range) {
   }
   if (isTutorService(svc)) {
     card.style.display = '';
-    grid.innerHTML = `<div class="rev-mix-block" style="grid-column:1/-1;">
-      <div class="rm-title">Orders</div>
-      <div style="font-size:12px;color:#374151;padding:2px 0 4px;">No backend order data shared for Tutor at Home.</div>
-      <div style="font-size:11px;color:#92400e;margin-top:6px;background:#fef3c7;padding:6px 8px;border-radius:4px;">GA shows 1 place_order in the booking flow (no purchase event). Enquiry flow has no order (it's a callback request tracked by the /request-consultation/success page_view, which had 0 hits in this window). Booking is the more-used flow (412 reached the wizard) but conversion to paid is ~1.</div>
-    </div>`;
+    const T = tutorOrdersInRange(range);
+    if (T.count === 0) {
+      grid.innerHTML = `<div class="rev-mix-block" style="grid-column:1/-1;">
+        <div class="rm-title">Paid Orders (selected period)</div>
+        <div style="font-size:12px;color:#374151;padding:2px 0 4px;">No paid bookings in this period.</div>
+        <div style="font-size:11px;color:#92400e;margin-top:6px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Backend has 1 lifetime paid booking — Weekly Plan · UAE · New · AED 570 (Apr 29), predating the GA data window (May 21 onward). GA logged 1 place_order in-window not in the backend export. Enquiry flow has no order (callback request, tracked by the /request-consultation/success page_view — newly firing, not in GA yet). Booking is the more-used flow (412 reached the wizard) but paid conversion is ~1.</div>
+      </div>`;
+      return;
+    }
+    grid.innerHTML = `
+      <div class="rev-mix-block">
+        <div class="rm-title">Package Mix (Vol vs Revenue)</div>
+        <div class="rm-row"><span class="rm-label">Weekly Plan</span><div class="rm-bar"><div class="rm-bar-fill" style="width:100%"></div></div><span class="rm-val">${T.count} · AED ${T.rev.toLocaleString()}</span></div>
+        <div style="font-size:11px;color:#374151;margin-top:8px;background:#f3f4f6;padding:6px 8px;border-radius:4px;">AED ${T.rev.toLocaleString()} across ${T.count} paid order${T.count>1?'s':''} in period · AOV AED ${T.aov.toLocaleString()}.</div>
+      </div>
+      <div class="rev-mix-block">
+        <div class="rm-title">Country Split</div>
+        <div class="rm-row"><span class="rm-label">🇦🇪 UAE</span><div class="rm-bar"><div class="rm-bar-fill" style="width:100%; background:linear-gradient(90deg,#14b8a6,#2dd4bf);"></div></div><span class="rm-val">${T.uae} · 100%</span></div>
+        <div style="font-size:11px;color:#1e40af;margin-top:8px;background:#dbeafe;padding:6px 8px;border-radius:4px;">Dubai-only service.</div>
+      </div>
+      <div class="rev-mix-block">
+        <div class="rm-title">Customer Type</div>
+        <div class="rm-row"><span class="rm-label">New</span><div class="rm-bar"><div class="rm-bar-fill" style="width:100%; background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div><span class="rm-val">${T.newCust} · 100%</span></div>
+        <div style="font-size:11px;color:#92400e;margin-top:8px;background:#fef3c7;padding:6px 8px;border-radius:4px;">Backend paid orders for the selected period. 1 lifetime order total.</div>
+      </div>`;
     return;
   }
   if (isPartyService(svc)) {
@@ -2491,9 +2528,9 @@ function renderFunnelFindings(svc, range) {
   if (isTutorService(svc)) {
     const a = aggTutor(range);
     el.innerHTML = `
-      <div class="uf-finding warn"><strong>Two flows, both barely convert</strong><span>Enquiry: ${fmt(a.landing)} landed → ${a.enqForm} reached form → ${a.enqSubmit} submitted. Booking: ${fmt(a.landing)} → ${a.reachedBooking} reached wizard → ${a.packageSel} picked a plan → ${a.summary} reviewed summary → ${a.purchased} paid.</span></div>
-      <div class="uf-finding"><strong>Booking is the dominant intent</strong><span>${a.reachedBooking} reached the booking wizard vs ${a.enqForm} the enquiry form — but only ${a.purchased} paid booking (GA place_order).</span></div>
-      <div class="uf-finding warn"><strong>No generate_lead / no enquiry_started</strong><span>Enquiry is tracked ONLY by page paths (/request-consultation → /success). 0 /success page_views in the window — enquiry submissions ≈ 0 (or re-pull to confirm).</span></div>
+      <div class="uf-finding warn"><strong>Two flows, both barely convert</strong><span>Enquiry: ${fmt(a.landing)} landed → ${a.enqForm} reached form → ${a.enqSubmit} submitted. Booking: ${fmt(a.landing)} → ${a.reachedBooking} reached wizard → ${a.packageSel} picked a plan → ${a.formStart} address page → ${a.purchased} paid (backend).</span></div>
+      <div class="uf-finding"><strong>Booking is the dominant intent</strong><span>${a.reachedBooking} reached the booking wizard vs ${a.enqForm} the enquiry form. Backend has 1 lifetime paid booking (Weekly Plan · AED 570 · UAE · Apr 29, pre-window); GA logged 1 place_order in-window not in the backend export.</span></div>
+      <div class="uf-finding warn"><strong>No generate_lead / no enquiry_started</strong><span>Enquiry is tracked ONLY by page paths (/request-consultation → /success). The /success page_view is newly firing and not in GA yet, so Enquiry Submitted shows 0 for now.</span></div>
       <div class="uf-finding"><strong>booking_started (${a.bookingStarted}) double-fires</strong><span>Fires on both "Book an Educator" and "Confirm &amp; Continue" — breakdown only, not a funnel step. select_item splits by path: ${a.profileSel} educator-profile clicks vs ${a.packageSel} package selects.</span></div>
       <div class="uf-finding"><strong>Dubai-only, UAE traffic only</strong><span>${(a.landingEn != null && a.landingAr != null) ? `/en ${a.landingEn} · /ar ${a.landingAr}` : 'UAE only'} — no KSA. Site rebranded "Educators at Home".</span></div>`;
     return;
@@ -2806,15 +2843,16 @@ const TUTOR_STAGES = [
   ]},
   { stage: 'Stage 4 — Booking details', events: [
     { e: 'form_start',             label: 'form_start (address/details form — tutor_at_home_booking)',  step: '4. Address Page' },
-    { e: 'booking_summary_viewed', label: 'booking_summary_viewed (reviewed order)',                    step: '5. Summary Viewed' }
+    { e: 'booking_summary_viewed', label: 'booking_summary_viewed (≈ Address Page — co-fires w/ form_start)', step: '(≈ Address Page)' }
   ]},
   { stage: 'Stage 5 — Conversion', events: [
     { e: 'begin_checkout',            label: 'begin_checkout (co-fire)',                                step: '(co-fire)' },
     { e: 'add_payment_info',          label: 'add_payment_info (co-fire)',                              step: '(co-fire)' },
-    { e: 'place_order',               label: 'place_order (1 paid booking — GA; no backend shared)',    step: '6. Purchased ✓' },
+    { e: 'place_order',               label: 'place_order (GA — 1 in-window; backend is truth)',        step: '(GA place_order · 1)' },
     { e: 'form_submit',               label: 'form_submit (co-fire)',                                   step: '(co-fire)' },
     { e: 'service_booking_confirmed', label: 'service_booking_confirmed (co-fire)',                     step: '(co-fire)' },
     { e: 'purchase',                  label: 'purchase (never fires — 0)',                              step: '(never fires — 0)' },
+    { e: 'order_confirmed',           label: 'Purchased — backend (1 lifetime, Apr 29, pre-window)',    step: '5. Purchased ✓ — source of truth' },
     { e: 'whatsapp',                  label: 'WhatsApp click (api.whatsapp.com — side exit)',           step: '(side exit · 1)' }
   ]}
 ];
@@ -2935,6 +2973,8 @@ function renderFunnelBreakdown(svc, range) {
   // events are sparse. Inject the 0-rows so the enquiry-submitted step and full conversion stage render
   // explicitly instead of hiding the honest zeros (see keepZero below).
   if (isTutor) {
+    const _to = tutorOrdersInRange(range).count;
+    ag['order_confirmed']           = { c: _to, u: _to };   // backend paid bookings in period
     ag['page_view__enq_success']    = ag['page_view__enq_success']    || { c: 0, u: 0 };
     ag['place_order']               = ag['place_order']               || { c: 0, u: 0 };
     ag['purchase']                  = ag['purchase']                  || { c: 0, u: 0 };
@@ -2965,7 +3005,7 @@ function renderFunnelBreakdown(svc, range) {
   // For Doctor at Home, keep the injected 0-value conversion rows (place_order / purchase / order_confirmed)
   // so the "funnel collapses at Book Now" story renders explicitly instead of hiding the empty conversion stage.
   const keepZero = isDoctor ? new Set(['place_order','purchase','order_confirmed'])
-                 : isTutor  ? new Set(['page_view__enq_success','place_order','purchase','service_booking_confirmed','begin_checkout','add_payment_info','form_submit'])
+                 : isTutor  ? new Set(['page_view__enq_success','place_order','purchase','service_booking_confirmed','begin_checkout','add_payment_info','form_submit','order_confirmed'])
                  : null;
   stages.forEach(stg => {
     const stageRows = stg.events.filter(ev => ag[ev.e] && (ag[ev.e].c > 0 || ag[ev.e].u > 0 || (keepZero && keepZero.has(ev.e))));

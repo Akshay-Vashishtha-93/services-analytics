@@ -709,13 +709,13 @@ const SERVICE_FLOWS = {
   },
   'Tutor at Home': {
     flowType: 'mixed',
-    flowEvent: 'form_submit', // last trackable on-site action
-    revenueEvent: 'purchase', // anomalous single purchase
+    flowEvent: 'place_order', // last trackable on-site action (booking flow)
+    revenueEvent: 'purchase',
     hasEnquiry: true,
     hasBooking: true,
-    enquiryEvent: 'form_submit', // generate_lead not implemented (bug)
-    bookingEvent: 'service_booking_confirmed',
-    description: 'Booking + enquiry flow. Note: generate_lead missing (bug), form_submit used as enquiry proxy.',
+    enquiryEvent: 'page_view /request-consultation/success (no generate_lead)',
+    bookingEvent: 'place_order',
+    description: 'Dual flow (Educators at Home rebrand): Enquiry via Request-a-Consultation (tracked by /success page_view, no generate_lead) + Booking via Book-an-Educator (payment). Dubai-only.',
     url: 'https://tutor-at-home.services.mumzworld.com/en'
   }
 };
@@ -1021,6 +1021,12 @@ function getRowsForCharts(svc) {
       e: r.e, c: r.c, u: r.u, r: 0
     }));
   }
+  if (svc === 'Tutor at Home' && typeof TUTOR_EVENTS !== 'undefined') {
+    return TUTOR_EVENTS.map(r => ({
+      d: r.d.slice(0,4) + '-' + r.d.slice(4,6) + '-' + r.d.slice(6,8),
+      e: r.e, c: r.c, u: r.u, r: 0
+    }));
+  }
   return (DATA[svc] && DATA[svc].rows) ? DATA[svc].rows.slice() : [];
 }
 function setGran(btn, g) {
@@ -1155,6 +1161,7 @@ function isWallpaperService(svc) { return svc === 'Wallpaper'; }
 function isPartyService(svc) { return svc === 'Party Planning'; }
 function isDoctorService(svc) { return svc === 'Doctor at Home'; }
 function isTelehealthService(svc) { return svc === 'Telehealth'; }
+function isTutorService(svc) { return svc === 'Tutor at Home'; }
 
 // === Embedded Nannies daily funnel data (May 12 - Jun 8, 2026) ===
 // Keys: l=Landing, s=Scroll, cv=CV viewed (profiles), b=Book Now, pk=Package selected,
@@ -1181,6 +1188,14 @@ const TELEHEALTH_EVENTS = [{"d":"20260521","e":"add_payment_info","c":2,"u":2},{
 const TELE_MIX = {
   landingUae: 755,    // /en 478 + /ar 277
   landingKsa: 2068    // /ar-SA 1411 + /en-SA 657  (73% KSA)
+};
+
+// === Embedded Tutor at Home (site-rebranded 'Educators at Home') daily funnel data (May 21 - Jul 21, 2026) — DUAL flow: Enquiry (Request-a-Consultation, tracked by page paths, no generate_lead) + Booking (Book-an-Educator, payment). Dubai-only, UAE traffic only. ===
+const TUTOR_EVENTS = [{"d":"20260521","e":"booking_started","c":5,"u":5},{"d":"20260521","e":"first_visit","c":21,"u":21},{"d":"20260521","e":"page_view__booking","c":6,"u":6},{"d":"20260521","e":"page_view__landing","c":23,"u":23},{"d":"20260521","e":"scroll","c":22,"u":22},{"d":"20260521","e":"select_item__package","c":1,"u":1},{"d":"20260521","e":"session_start","c":23,"u":23},{"d":"20260521","e":"view_item_list","c":20,"u":20},{"d":"20260522","e":"booking_started","c":5,"u":5},{"d":"20260522","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260522","e":"first_visit","c":30,"u":30},{"d":"20260522","e":"form_start","c":1,"u":1},{"d":"20260522","e":"page_view__booking","c":4,"u":4},{"d":"20260522","e":"page_view__enq_form","c":1,"u":1},{"d":"20260522","e":"page_view__landing","c":33,"u":33},{"d":"20260522","e":"scroll","c":32,"u":32},{"d":"20260522","e":"select_item__package","c":1,"u":1},{"d":"20260522","e":"session_start","c":33,"u":33},{"d":"20260522","e":"view_item_list","c":28,"u":28},{"d":"20260523","e":"booking_started","c":5,"u":5},{"d":"20260523","e":"first_visit","c":29,"u":29},{"d":"20260523","e":"page_view__booking","c":6,"u":6},{"d":"20260523","e":"page_view__landing","c":29,"u":29},{"d":"20260523","e":"scroll","c":26,"u":26},{"d":"20260523","e":"select_item__package","c":1,"u":1},{"d":"20260523","e":"select_item__profile","c":2,"u":2},{"d":"20260523","e":"session_start","c":29,"u":29},{"d":"20260523","e":"view_item_list","c":25,"u":25},{"d":"20260524","e":"booking_started","c":5,"u":5},{"d":"20260524","e":"booking_summary_viewed","c":2,"u":2},{"d":"20260524","e":"first_visit","c":34,"u":34},{"d":"20260524","e":"form_start","c":2,"u":2},{"d":"20260524","e":"page_view__booking","c":5,"u":5},{"d":"20260524","e":"page_view__landing","c":35,"u":35},{"d":"20260524","e":"scroll","c":32,"u":32},{"d":"20260524","e":"select_item__package","c":2,"u":2},{"d":"20260524","e":"session_start","c":35,"u":35},{"d":"20260524","e":"view_item_list","c":28,"u":28},{"d":"20260525","e":"booking_started","c":4,"u":4},{"d":"20260525","e":"first_visit","c":37,"u":37},{"d":"20260525","e":"page_view__booking","c":5,"u":5},{"d":"20260525","e":"page_view__enq_form","c":1,"u":1},{"d":"20260525","e":"page_view__landing","c":37,"u":37},{"d":"20260525","e":"scroll","c":34,"u":34},{"d":"20260525","e":"select_item__package","c":1,"u":1},{"d":"20260525","e":"session_start","c":38,"u":38},{"d":"20260525","e":"view_item_list","c":32,"u":32},{"d":"20260526","e":"booking_started","c":2,"u":2},{"d":"20260526","e":"first_visit","c":27,"u":27},{"d":"20260526","e":"page_view__booking","c":2,"u":2},{"d":"20260526","e":"page_view__enq_form","c":1,"u":1},{"d":"20260526","e":"page_view__landing","c":27,"u":27},{"d":"20260526","e":"scroll","c":27,"u":27},{"d":"20260526","e":"select_item__package","c":1,"u":1},{"d":"20260526","e":"session_start","c":27,"u":27},{"d":"20260526","e":"view_item_list","c":25,"u":25},{"d":"20260527","e":"first_visit","c":16,"u":16},{"d":"20260527","e":"page_view__booking","c":2,"u":2},{"d":"20260527","e":"page_view__landing","c":16,"u":16},{"d":"20260527","e":"scroll","c":17,"u":17},{"d":"20260527","e":"select_item__profile","c":1,"u":1},{"d":"20260527","e":"session_start","c":17,"u":17},{"d":"20260527","e":"view_item_list","c":16,"u":16},{"d":"20260528","e":"booking_started","c":1,"u":1},{"d":"20260528","e":"first_visit","c":12,"u":12},{"d":"20260528","e":"page_view__booking","c":1,"u":1},{"d":"20260528","e":"page_view__landing","c":12,"u":12},{"d":"20260528","e":"scroll","c":11,"u":11},{"d":"20260528","e":"session_start","c":12,"u":12},{"d":"20260528","e":"view_item_list","c":8,"u":8},{"d":"20260529","e":"booking_started","c":1,"u":1},{"d":"20260529","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260529","e":"first_visit","c":28,"u":28},{"d":"20260529","e":"form_start","c":1,"u":1},{"d":"20260529","e":"page_view__booking","c":1,"u":1},{"d":"20260529","e":"page_view__landing","c":28,"u":28},{"d":"20260529","e":"scroll","c":28,"u":28},{"d":"20260529","e":"select_item__package","c":1,"u":1},{"d":"20260529","e":"select_item__profile","c":2,"u":2},{"d":"20260529","e":"session_start","c":28,"u":28},{"d":"20260529","e":"view_item_list","c":27,"u":27},{"d":"20260530","e":"booking_started","c":5,"u":5},{"d":"20260530","e":"first_visit","c":21,"u":21},{"d":"20260530","e":"page_view__booking","c":5,"u":5},{"d":"20260530","e":"page_view__landing","c":21,"u":21},{"d":"20260530","e":"scroll","c":21,"u":21},{"d":"20260530","e":"select_item__package","c":1,"u":1},{"d":"20260530","e":"select_item__profile","c":1,"u":1},{"d":"20260530","e":"session_start","c":21,"u":21},{"d":"20260530","e":"view_item_list","c":19,"u":19},{"d":"20260531","e":"booking_started","c":2,"u":2},{"d":"20260531","e":"first_visit","c":16,"u":16},{"d":"20260531","e":"page_view__booking","c":4,"u":4},{"d":"20260531","e":"page_view__landing","c":17,"u":17},{"d":"20260531","e":"scroll","c":18,"u":18},{"d":"20260531","e":"select_item__package","c":1,"u":1},{"d":"20260531","e":"session_start","c":18,"u":18},{"d":"20260531","e":"view_item_list","c":15,"u":15},{"d":"20260601","e":"booking_started","c":11,"u":11},{"d":"20260601","e":"first_visit","c":211,"u":211},{"d":"20260601","e":"page_view__booking","c":10,"u":10},{"d":"20260601","e":"page_view__enq_form","c":3,"u":3},{"d":"20260601","e":"page_view__landing","c":212,"u":212},{"d":"20260601","e":"scroll","c":136,"u":136},{"d":"20260601","e":"select_item__package","c":3,"u":3},{"d":"20260601","e":"select_item__profile","c":4,"u":4},{"d":"20260601","e":"session_start","c":211,"u":211},{"d":"20260601","e":"view_item_list","c":102,"u":102},{"d":"20260602","e":"booking_started","c":4,"u":4},{"d":"20260602","e":"first_visit","c":47,"u":47},{"d":"20260602","e":"page_view__booking","c":7,"u":7},{"d":"20260602","e":"page_view__landing","c":47,"u":47},{"d":"20260602","e":"scroll","c":43,"u":43},{"d":"20260602","e":"select_item__package","c":3,"u":3},{"d":"20260602","e":"select_item__profile","c":4,"u":4},{"d":"20260602","e":"session_start","c":48,"u":48},{"d":"20260602","e":"view_item_list","c":39,"u":39},{"d":"20260603","e":"booking_started","c":3,"u":3},{"d":"20260603","e":"first_visit","c":39,"u":39},{"d":"20260603","e":"page_view__booking","c":5,"u":5},{"d":"20260603","e":"page_view__enq_form","c":1,"u":1},{"d":"20260603","e":"page_view__landing","c":40,"u":40},{"d":"20260603","e":"scroll","c":39,"u":39},{"d":"20260603","e":"select_item__profile","c":1,"u":1},{"d":"20260603","e":"session_start","c":40,"u":40},{"d":"20260603","e":"view_item_list","c":36,"u":36},{"d":"20260604","e":"booking_started","c":2,"u":2},{"d":"20260604","e":"first_visit","c":25,"u":25},{"d":"20260604","e":"page_view__booking","c":2,"u":2},{"d":"20260604","e":"page_view__landing","c":25,"u":25},{"d":"20260604","e":"scroll","c":22,"u":22},{"d":"20260604","e":"select_item__profile","c":3,"u":3},{"d":"20260604","e":"session_start","c":25,"u":25},{"d":"20260604","e":"view_item_list","c":21,"u":21},{"d":"20260605","e":"booking_started","c":2,"u":2},{"d":"20260605","e":"first_visit","c":18,"u":18},{"d":"20260605","e":"page_view__booking","c":2,"u":2},{"d":"20260605","e":"page_view__enq_form","c":1,"u":1},{"d":"20260605","e":"page_view__landing","c":18,"u":18},{"d":"20260605","e":"scroll","c":18,"u":18},{"d":"20260605","e":"select_item__profile","c":1,"u":1},{"d":"20260605","e":"session_start","c":18,"u":18},{"d":"20260605","e":"view_item_list","c":16,"u":16},{"d":"20260606","e":"booking_started","c":4,"u":4},{"d":"20260606","e":"booking_summary_viewed","c":2,"u":2},{"d":"20260606","e":"first_visit","c":21,"u":21},{"d":"20260606","e":"form_start","c":2,"u":2},{"d":"20260606","e":"page_view__booking","c":7,"u":7},{"d":"20260606","e":"page_view__landing","c":21,"u":21},{"d":"20260606","e":"scroll","c":20,"u":20},{"d":"20260606","e":"select_item__package","c":3,"u":3},{"d":"20260606","e":"select_item__profile","c":2,"u":2},{"d":"20260606","e":"session_start","c":21,"u":21},{"d":"20260606","e":"view_item_list","c":19,"u":19},{"d":"20260607","e":"first_visit","c":23,"u":23},{"d":"20260607","e":"page_view__booking","c":1,"u":1},{"d":"20260607","e":"page_view__landing","c":23,"u":23},{"d":"20260607","e":"scroll","c":21,"u":21},{"d":"20260607","e":"select_item__package","c":1,"u":1},{"d":"20260607","e":"session_start","c":23,"u":23},{"d":"20260607","e":"view_item_list","c":18,"u":18},{"d":"20260608","e":"booking_started","c":2,"u":2},{"d":"20260608","e":"first_visit","c":33,"u":33},{"d":"20260608","e":"page_view__booking","c":2,"u":2},{"d":"20260608","e":"page_view__landing","c":33,"u":33},{"d":"20260608","e":"scroll","c":32,"u":32},{"d":"20260608","e":"select_item__package","c":2,"u":2},{"d":"20260608","e":"select_item__profile","c":1,"u":1},{"d":"20260608","e":"session_start","c":34,"u":34},{"d":"20260608","e":"view_item_list","c":29,"u":29},{"d":"20260609","e":"booking_started","c":2,"u":2},{"d":"20260609","e":"first_visit","c":21,"u":21},{"d":"20260609","e":"page_view__booking","c":3,"u":3},{"d":"20260609","e":"page_view__landing","c":21,"u":21},{"d":"20260609","e":"scroll","c":18,"u":18},{"d":"20260609","e":"select_item__package","c":1,"u":1},{"d":"20260609","e":"session_start","c":21,"u":21},{"d":"20260609","e":"view_item_list","c":16,"u":16},{"d":"20260610","e":"booking_started","c":5,"u":5},{"d":"20260610","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260610","e":"first_visit","c":32,"u":32},{"d":"20260610","e":"form_start","c":2,"u":2},{"d":"20260610","e":"page_view__booking","c":4,"u":4},{"d":"20260610","e":"page_view__enq_form","c":1,"u":1},{"d":"20260610","e":"page_view__landing","c":34,"u":34},{"d":"20260610","e":"scroll","c":32,"u":32},{"d":"20260610","e":"select_item__package","c":1,"u":1},{"d":"20260610","e":"select_item__profile","c":2,"u":2},{"d":"20260610","e":"session_start","c":34,"u":34},{"d":"20260610","e":"view_item_list","c":30,"u":30},{"d":"20260611","e":"booking_started","c":5,"u":5},{"d":"20260611","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260611","e":"first_visit","c":29,"u":29},{"d":"20260611","e":"form_start","c":1,"u":1},{"d":"20260611","e":"page_view__booking","c":5,"u":5},{"d":"20260611","e":"page_view__enq_form","c":1,"u":1},{"d":"20260611","e":"page_view__landing","c":29,"u":29},{"d":"20260611","e":"scroll","c":29,"u":29},{"d":"20260611","e":"select_item__package","c":1,"u":1},{"d":"20260611","e":"select_item__profile","c":1,"u":1},{"d":"20260611","e":"session_start","c":29,"u":29},{"d":"20260611","e":"view_item_list","c":25,"u":25},{"d":"20260612","e":"booking_started","c":7,"u":7},{"d":"20260612","e":"first_visit","c":23,"u":23},{"d":"20260612","e":"page_view__booking","c":9,"u":9},{"d":"20260612","e":"page_view__enq_form","c":1,"u":1},{"d":"20260612","e":"page_view__landing","c":24,"u":24},{"d":"20260612","e":"scroll","c":23,"u":23},{"d":"20260612","e":"select_item__package","c":4,"u":4},{"d":"20260612","e":"select_item__profile","c":1,"u":1},{"d":"20260612","e":"session_start","c":24,"u":24},{"d":"20260612","e":"view_item_list","c":23,"u":23},{"d":"20260613","e":"booking_started","c":2,"u":2},{"d":"20260613","e":"first_visit","c":19,"u":19},{"d":"20260613","e":"page_view__booking","c":2,"u":2},{"d":"20260613","e":"page_view__enq_form","c":1,"u":1},{"d":"20260613","e":"page_view__landing","c":19,"u":19},{"d":"20260613","e":"scroll","c":17,"u":17},{"d":"20260613","e":"select_item__profile","c":3,"u":3},{"d":"20260613","e":"session_start","c":19,"u":19},{"d":"20260613","e":"view_item_list","c":17,"u":17},{"d":"20260614","e":"booking_started","c":2,"u":2},{"d":"20260614","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260614","e":"first_visit","c":30,"u":30},{"d":"20260614","e":"form_start","c":1,"u":1},{"d":"20260614","e":"page_view__booking","c":4,"u":4},{"d":"20260614","e":"page_view__landing","c":30,"u":30},{"d":"20260614","e":"scroll","c":30,"u":30},{"d":"20260614","e":"select_item__package","c":1,"u":1},{"d":"20260614","e":"select_item__profile","c":2,"u":2},{"d":"20260614","e":"session_start","c":30,"u":30},{"d":"20260614","e":"view_item_list","c":28,"u":28},{"d":"20260615","e":"booking_started","c":2,"u":2},{"d":"20260615","e":"first_visit","c":19,"u":19},{"d":"20260615","e":"page_view__booking","c":3,"u":3},{"d":"20260615","e":"page_view__landing","c":20,"u":20},{"d":"20260615","e":"scroll","c":19,"u":19},{"d":"20260615","e":"select_item__package","c":1,"u":1},{"d":"20260615","e":"select_item__profile","c":3,"u":3},{"d":"20260615","e":"session_start","c":20,"u":20},{"d":"20260615","e":"view_item_list","c":19,"u":19},{"d":"20260616","e":"booking_started","c":9,"u":9},{"d":"20260616","e":"first_visit","c":32,"u":32},{"d":"20260616","e":"page_view__booking","c":9,"u":9},{"d":"20260616","e":"page_view__enq_form","c":1,"u":1},{"d":"20260616","e":"page_view__landing","c":34,"u":34},{"d":"20260616","e":"scroll","c":34,"u":34},{"d":"20260616","e":"select_item__package","c":3,"u":3},{"d":"20260616","e":"select_item__profile","c":1,"u":1},{"d":"20260616","e":"session_start","c":34,"u":34},{"d":"20260616","e":"view_item_list","c":32,"u":32},{"d":"20260617","e":"booking_started","c":2,"u":2},{"d":"20260617","e":"first_visit","c":22,"u":22},{"d":"20260617","e":"page_view__booking","c":3,"u":3},{"d":"20260617","e":"page_view__landing","c":22,"u":22},{"d":"20260617","e":"scroll","c":19,"u":19},{"d":"20260617","e":"select_item__profile","c":2,"u":2},{"d":"20260617","e":"session_start","c":22,"u":22},{"d":"20260617","e":"view_item_list","c":19,"u":19},{"d":"20260618","e":"booking_started","c":3,"u":3},{"d":"20260618","e":"first_visit","c":23,"u":23},{"d":"20260618","e":"page_view__booking","c":4,"u":4},{"d":"20260618","e":"page_view__landing","c":23,"u":23},{"d":"20260618","e":"scroll","c":23,"u":23},{"d":"20260618","e":"select_item__profile","c":1,"u":1},{"d":"20260618","e":"session_start","c":23,"u":23},{"d":"20260618","e":"view_item_list","c":22,"u":22},{"d":"20260619","e":"booking_started","c":4,"u":4},{"d":"20260619","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260619","e":"first_visit","c":23,"u":23},{"d":"20260619","e":"form_start","c":1,"u":1},{"d":"20260619","e":"page_view__booking","c":4,"u":4},{"d":"20260619","e":"page_view__landing","c":25,"u":25},{"d":"20260619","e":"scroll","c":24,"u":24},{"d":"20260619","e":"select_item__package","c":3,"u":3},{"d":"20260619","e":"select_item__profile","c":1,"u":1},{"d":"20260619","e":"session_start","c":25,"u":25},{"d":"20260619","e":"view_item_list","c":23,"u":23},{"d":"20260620","e":"booking_started","c":4,"u":4},{"d":"20260620","e":"first_visit","c":21,"u":21},{"d":"20260620","e":"page_view__booking","c":5,"u":5},{"d":"20260620","e":"page_view__landing","c":22,"u":22},{"d":"20260620","e":"scroll","c":21,"u":21},{"d":"20260620","e":"select_item__package","c":2,"u":2},{"d":"20260620","e":"select_item__profile","c":1,"u":1},{"d":"20260620","e":"session_start","c":22,"u":22},{"d":"20260620","e":"view_item_list","c":22,"u":22},{"d":"20260621","e":"booking_started","c":3,"u":3},{"d":"20260621","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260621","e":"first_visit","c":18,"u":18},{"d":"20260621","e":"form_start","c":1,"u":1},{"d":"20260621","e":"page_view__booking","c":5,"u":5},{"d":"20260621","e":"page_view__enq_form","c":1,"u":1},{"d":"20260621","e":"page_view__landing","c":18,"u":18},{"d":"20260621","e":"scroll","c":19,"u":19},{"d":"20260621","e":"select_item__package","c":3,"u":3},{"d":"20260621","e":"select_item__profile","c":2,"u":2},{"d":"20260621","e":"session_start","c":19,"u":19},{"d":"20260621","e":"view_item_list","c":15,"u":15},{"d":"20260622","e":"booking_started","c":4,"u":4},{"d":"20260622","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260622","e":"first_visit","c":30,"u":30},{"d":"20260622","e":"form_start","c":1,"u":1},{"d":"20260622","e":"page_view__booking","c":4,"u":4},{"d":"20260622","e":"page_view__landing","c":30,"u":30},{"d":"20260622","e":"scroll","c":30,"u":30},{"d":"20260622","e":"select_item__package","c":2,"u":2},{"d":"20260622","e":"select_item__profile","c":4,"u":4},{"d":"20260622","e":"session_start","c":30,"u":30},{"d":"20260622","e":"view_item_list","c":26,"u":26},{"d":"20260623","e":"first_visit","c":20,"u":20},{"d":"20260623","e":"page_view__booking","c":1,"u":1},{"d":"20260623","e":"page_view__landing","c":21,"u":21},{"d":"20260623","e":"scroll","c":20,"u":20},{"d":"20260623","e":"select_item__profile","c":1,"u":1},{"d":"20260623","e":"session_start","c":21,"u":21},{"d":"20260623","e":"view_item_list","c":20,"u":20},{"d":"20260624","e":"booking_started","c":1,"u":1},{"d":"20260624","e":"first_visit","c":19,"u":19},{"d":"20260624","e":"page_view__booking","c":1,"u":1},{"d":"20260624","e":"page_view__landing","c":20,"u":20},{"d":"20260624","e":"scroll","c":20,"u":20},{"d":"20260624","e":"select_item__profile","c":3,"u":3},{"d":"20260624","e":"session_start","c":20,"u":20},{"d":"20260624","e":"view_item_list","c":18,"u":18},{"d":"20260625","e":"booking_started","c":1,"u":1},{"d":"20260625","e":"first_visit","c":22,"u":22},{"d":"20260625","e":"page_view__booking","c":1,"u":1},{"d":"20260625","e":"page_view__enq_form","c":1,"u":1},{"d":"20260625","e":"page_view__landing","c":23,"u":23},{"d":"20260625","e":"scroll","c":23,"u":23},{"d":"20260625","e":"select_item__package","c":1,"u":1},{"d":"20260625","e":"select_item__profile","c":2,"u":2},{"d":"20260625","e":"session_start","c":23,"u":23},{"d":"20260625","e":"view_item_list","c":22,"u":22},{"d":"20260625","e":"whatsapp","c":1,"u":1},{"d":"20260626","e":"booking_started","c":4,"u":4},{"d":"20260626","e":"first_visit","c":30,"u":30},{"d":"20260626","e":"page_view__booking","c":5,"u":5},{"d":"20260626","e":"page_view__landing","c":30,"u":30},{"d":"20260626","e":"scroll","c":30,"u":30},{"d":"20260626","e":"select_item__package","c":2,"u":2},{"d":"20260626","e":"select_item__profile","c":5,"u":5},{"d":"20260626","e":"session_start","c":30,"u":30},{"d":"20260626","e":"view_item_list","c":29,"u":29},{"d":"20260627","e":"booking_started","c":22,"u":22},{"d":"20260627","e":"booking_summary_viewed","c":5,"u":5},{"d":"20260627","e":"first_visit","c":83,"u":83},{"d":"20260627","e":"form_start","c":5,"u":5},{"d":"20260627","e":"page_view__booking","c":26,"u":26},{"d":"20260627","e":"page_view__landing","c":85,"u":85},{"d":"20260627","e":"scroll","c":84,"u":84},{"d":"20260627","e":"select_item__package","c":8,"u":8},{"d":"20260627","e":"select_item__profile","c":8,"u":8},{"d":"20260627","e":"session_start","c":85,"u":85},{"d":"20260627","e":"view_item_list","c":81,"u":81},{"d":"20260628","e":"booking_started","c":20,"u":20},{"d":"20260628","e":"first_visit","c":97,"u":97},{"d":"20260628","e":"page_view__booking","c":25,"u":25},{"d":"20260628","e":"page_view__enq_form","c":2,"u":2},{"d":"20260628","e":"page_view__landing","c":102,"u":102},{"d":"20260628","e":"scroll","c":99,"u":99},{"d":"20260628","e":"select_item__package","c":3,"u":3},{"d":"20260628","e":"select_item__profile","c":14,"u":14},{"d":"20260628","e":"session_start","c":100,"u":100},{"d":"20260628","e":"view_item_list","c":98,"u":98},{"d":"20260629","e":"booking_started","c":9,"u":9},{"d":"20260629","e":"first_visit","c":63,"u":63},{"d":"20260629","e":"page_view__booking","c":11,"u":11},{"d":"20260629","e":"page_view__landing","c":63,"u":63},{"d":"20260629","e":"scroll","c":63,"u":63},{"d":"20260629","e":"select_item__package","c":5,"u":5},{"d":"20260629","e":"select_item__profile","c":5,"u":5},{"d":"20260629","e":"session_start","c":63,"u":63},{"d":"20260629","e":"view_item_list","c":59,"u":59},{"d":"20260630","e":"booking_started","c":8,"u":8},{"d":"20260630","e":"booking_summary_viewed","c":2,"u":2},{"d":"20260630","e":"first_visit","c":44,"u":44},{"d":"20260630","e":"form_start","c":2,"u":2},{"d":"20260630","e":"page_view__booking","c":9,"u":9},{"d":"20260630","e":"page_view__landing","c":45,"u":45},{"d":"20260630","e":"scroll","c":41,"u":41},{"d":"20260630","e":"select_item__package","c":3,"u":3},{"d":"20260630","e":"select_item__profile","c":2,"u":2},{"d":"20260630","e":"session_start","c":45,"u":45},{"d":"20260630","e":"view_item_list","c":42,"u":42},{"d":"20260701","e":"booking_started","c":7,"u":7},{"d":"20260701","e":"first_visit","c":36,"u":36},{"d":"20260701","e":"page_view__booking","c":8,"u":8},{"d":"20260701","e":"page_view__landing","c":37,"u":37},{"d":"20260701","e":"scroll","c":37,"u":37},{"d":"20260701","e":"select_item__package","c":1,"u":1},{"d":"20260701","e":"select_item__profile","c":2,"u":2},{"d":"20260701","e":"session_start","c":37,"u":37},{"d":"20260701","e":"view_item_list","c":35,"u":35},{"d":"20260702","e":"booking_started","c":6,"u":6},{"d":"20260702","e":"first_visit","c":26,"u":26},{"d":"20260702","e":"page_view__booking","c":6,"u":6},{"d":"20260702","e":"page_view__landing","c":27,"u":27},{"d":"20260702","e":"scroll","c":26,"u":26},{"d":"20260702","e":"select_item__package","c":1,"u":1},{"d":"20260702","e":"select_item__profile","c":1,"u":1},{"d":"20260702","e":"session_start","c":27,"u":27},{"d":"20260702","e":"view_item_list","c":22,"u":22},{"d":"20260703","e":"booking_started","c":2,"u":2},{"d":"20260703","e":"first_visit","c":24,"u":24},{"d":"20260703","e":"page_view__booking","c":2,"u":2},{"d":"20260703","e":"page_view__enq_form","c":1,"u":1},{"d":"20260703","e":"page_view__landing","c":24,"u":24},{"d":"20260703","e":"scroll","c":23,"u":23},{"d":"20260703","e":"session_start","c":24,"u":24},{"d":"20260703","e":"view_item_list","c":20,"u":20},{"d":"20260704","e":"booking_started","c":6,"u":6},{"d":"20260704","e":"first_visit","c":30,"u":30},{"d":"20260704","e":"form_start","c":1,"u":1},{"d":"20260704","e":"page_view__booking","c":6,"u":6},{"d":"20260704","e":"page_view__enq_form","c":1,"u":1},{"d":"20260704","e":"page_view__landing","c":32,"u":32},{"d":"20260704","e":"scroll","c":31,"u":31},{"d":"20260704","e":"session_start","c":32,"u":32},{"d":"20260704","e":"view_item_list","c":26,"u":26},{"d":"20260705","e":"booking_started","c":7,"u":7},{"d":"20260705","e":"booking_summary_viewed","c":3,"u":3},{"d":"20260705","e":"first_visit","c":34,"u":34},{"d":"20260705","e":"form_start","c":3,"u":3},{"d":"20260705","e":"page_view__booking","c":9,"u":9},{"d":"20260705","e":"page_view__enq_form","c":1,"u":1},{"d":"20260705","e":"page_view__landing","c":37,"u":37},{"d":"20260705","e":"scroll","c":35,"u":35},{"d":"20260705","e":"select_item__package","c":4,"u":4},{"d":"20260705","e":"select_item__profile","c":2,"u":2},{"d":"20260705","e":"session_start","c":36,"u":36},{"d":"20260705","e":"view_item_list","c":31,"u":31},{"d":"20260706","e":"booking_started","c":17,"u":17},{"d":"20260706","e":"booking_summary_viewed","c":2,"u":2},{"d":"20260706","e":"first_visit","c":49,"u":49},{"d":"20260706","e":"form_start","c":2,"u":2},{"d":"20260706","e":"page_view__booking","c":18,"u":18},{"d":"20260706","e":"page_view__landing","c":53,"u":53},{"d":"20260706","e":"scroll","c":52,"u":52},{"d":"20260706","e":"select_item__package","c":4,"u":4},{"d":"20260706","e":"select_item__profile","c":2,"u":2},{"d":"20260706","e":"session_start","c":53,"u":53},{"d":"20260706","e":"view_item_list","c":48,"u":48},{"d":"20260707","e":"first_visit","c":27,"u":27},{"d":"20260707","e":"page_view__enq_form","c":1,"u":1},{"d":"20260707","e":"page_view__landing","c":27,"u":27},{"d":"20260707","e":"scroll","c":27,"u":27},{"d":"20260707","e":"session_start","c":27,"u":27},{"d":"20260707","e":"view_item_list","c":23,"u":23},{"d":"20260708","e":"booking_started","c":2,"u":2},{"d":"20260708","e":"first_visit","c":23,"u":23},{"d":"20260708","e":"page_view__booking","c":2,"u":2},{"d":"20260708","e":"page_view__landing","c":23,"u":23},{"d":"20260708","e":"scroll","c":22,"u":22},{"d":"20260708","e":"select_item__package","c":1,"u":1},{"d":"20260708","e":"select_item__profile","c":2,"u":2},{"d":"20260708","e":"session_start","c":23,"u":23},{"d":"20260708","e":"view_item_list","c":21,"u":21},{"d":"20260709","e":"booking_started","c":5,"u":5},{"d":"20260709","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260709","e":"first_visit","c":23,"u":23},{"d":"20260709","e":"form_start","c":1,"u":1},{"d":"20260709","e":"page_view__booking","c":5,"u":5},{"d":"20260709","e":"page_view__landing","c":24,"u":24},{"d":"20260709","e":"scroll","c":24,"u":24},{"d":"20260709","e":"select_item__package","c":1,"u":1},{"d":"20260709","e":"select_item__profile","c":2,"u":2},{"d":"20260709","e":"session_start","c":24,"u":24},{"d":"20260709","e":"view_item_list","c":21,"u":21},{"d":"20260710","e":"booking_started","c":2,"u":2},{"d":"20260710","e":"first_visit","c":25,"u":25},{"d":"20260710","e":"page_view__booking","c":4,"u":4},{"d":"20260710","e":"page_view__landing","c":25,"u":25},{"d":"20260710","e":"scroll","c":22,"u":22},{"d":"20260710","e":"select_item__package","c":2,"u":2},{"d":"20260710","e":"select_item__profile","c":3,"u":3},{"d":"20260710","e":"session_start","c":25,"u":25},{"d":"20260710","e":"view_item_list","c":22,"u":22},{"d":"20260711","e":"booking_started","c":2,"u":2},{"d":"20260711","e":"first_visit","c":22,"u":22},{"d":"20260711","e":"page_view__booking","c":2,"u":2},{"d":"20260711","e":"page_view__landing","c":22,"u":22},{"d":"20260711","e":"scroll","c":22,"u":22},{"d":"20260711","e":"select_item__profile","c":1,"u":1},{"d":"20260711","e":"session_start","c":22,"u":22},{"d":"20260711","e":"view_item_list","c":19,"u":19},{"d":"20260712","e":"booking_started","c":3,"u":3},{"d":"20260712","e":"first_visit","c":35,"u":35},{"d":"20260712","e":"page_view__booking","c":3,"u":3},{"d":"20260712","e":"page_view__enq_form","c":1,"u":1},{"d":"20260712","e":"page_view__landing","c":35,"u":35},{"d":"20260712","e":"scroll","c":33,"u":33},{"d":"20260712","e":"select_item__package","c":1,"u":1},{"d":"20260712","e":"session_start","c":36,"u":36},{"d":"20260712","e":"view_item_list","c":34,"u":34},{"d":"20260713","e":"booking_started","c":3,"u":3},{"d":"20260713","e":"first_visit","c":29,"u":29},{"d":"20260713","e":"page_view__booking","c":3,"u":3},{"d":"20260713","e":"page_view__landing","c":30,"u":30},{"d":"20260713","e":"scroll","c":28,"u":28},{"d":"20260713","e":"select_item__package","c":2,"u":2},{"d":"20260713","e":"select_item__profile","c":3,"u":3},{"d":"20260713","e":"session_start","c":30,"u":30},{"d":"20260713","e":"view_item_list","c":26,"u":26},{"d":"20260714","e":"booking_started","c":3,"u":3},{"d":"20260714","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260714","e":"first_visit","c":19,"u":19},{"d":"20260714","e":"form_start","c":1,"u":1},{"d":"20260714","e":"page_view__booking","c":6,"u":6},{"d":"20260714","e":"page_view__landing","c":19,"u":19},{"d":"20260714","e":"scroll","c":18,"u":18},{"d":"20260714","e":"select_item__package","c":1,"u":1},{"d":"20260714","e":"select_item__profile","c":2,"u":2},{"d":"20260714","e":"session_start","c":19,"u":19},{"d":"20260714","e":"view_item_list","c":16,"u":16},{"d":"20260715","e":"booking_started","c":4,"u":4},{"d":"20260715","e":"first_visit","c":30,"u":30},{"d":"20260715","e":"page_view__booking","c":5,"u":5},{"d":"20260715","e":"page_view__landing","c":31,"u":31},{"d":"20260715","e":"scroll","c":31,"u":31},{"d":"20260715","e":"select_item__package","c":1,"u":1},{"d":"20260715","e":"select_item__profile","c":4,"u":4},{"d":"20260715","e":"session_start","c":31,"u":31},{"d":"20260715","e":"view_item_list","c":30,"u":30},{"d":"20260716","e":"booking_started","c":7,"u":7},{"d":"20260716","e":"first_visit","c":40,"u":40},{"d":"20260716","e":"page_view__booking","c":9,"u":9},{"d":"20260716","e":"page_view__enq_form","c":1,"u":1},{"d":"20260716","e":"page_view__landing","c":42,"u":42},{"d":"20260716","e":"scroll","c":40,"u":40},{"d":"20260716","e":"select_item__package","c":3,"u":3},{"d":"20260716","e":"select_item__profile","c":5,"u":5},{"d":"20260716","e":"session_start","c":41,"u":41},{"d":"20260716","e":"view_item_list","c":38,"u":38},{"d":"20260717","e":"booking_started","c":3,"u":3},{"d":"20260717","e":"first_visit","c":21,"u":21},{"d":"20260717","e":"page_view__booking","c":4,"u":4},{"d":"20260717","e":"page_view__landing","c":22,"u":22},{"d":"20260717","e":"scroll","c":22,"u":22},{"d":"20260717","e":"select_item__profile","c":1,"u":1},{"d":"20260717","e":"session_start","c":22,"u":22},{"d":"20260717","e":"view_item_list","c":20,"u":20},{"d":"20260718","e":"booking_started","c":8,"u":8},{"d":"20260718","e":"booking_summary_viewed","c":1,"u":1},{"d":"20260718","e":"first_visit","c":33,"u":33},{"d":"20260718","e":"form_start","c":1,"u":1},{"d":"20260718","e":"page_view__booking","c":9,"u":9},{"d":"20260718","e":"page_view__landing","c":35,"u":35},{"d":"20260718","e":"scroll","c":34,"u":34},{"d":"20260718","e":"select_item__package","c":3,"u":3},{"d":"20260718","e":"select_item__profile","c":1,"u":1},{"d":"20260718","e":"session_start","c":35,"u":35},{"d":"20260718","e":"view_item_list","c":31,"u":31},{"d":"20260719","e":"booking_started","c":26,"u":26},{"d":"20260719","e":"booking_summary_viewed","c":4,"u":4},{"d":"20260719","e":"first_visit","c":96,"u":96},{"d":"20260719","e":"form_start","c":4,"u":4},{"d":"20260719","e":"page_view__booking","c":31,"u":31},{"d":"20260719","e":"page_view__enq_form","c":1,"u":1},{"d":"20260719","e":"page_view__landing","c":97,"u":97},{"d":"20260719","e":"scroll","c":95,"u":95},{"d":"20260719","e":"select_item__package","c":11,"u":11},{"d":"20260719","e":"select_item__profile","c":7,"u":7},{"d":"20260719","e":"session_start","c":97,"u":97},{"d":"20260719","e":"view_item_list","c":94,"u":94},{"d":"20260720","e":"add_payment_info","c":1,"u":1},{"d":"20260720","e":"begin_checkout","c":1,"u":1},{"d":"20260720","e":"booking_started","c":23,"u":23},{"d":"20260720","e":"booking_summary_viewed","c":3,"u":3},{"d":"20260720","e":"first_visit","c":87,"u":87},{"d":"20260720","e":"form_start","c":3,"u":3},{"d":"20260720","e":"form_submit","c":1,"u":1},{"d":"20260720","e":"page_view__booking","c":29,"u":29},{"d":"20260720","e":"page_view__enq_form","c":2,"u":2},{"d":"20260720","e":"page_view__landing","c":90,"u":90},{"d":"20260720","e":"place_order","c":1,"u":1},{"d":"20260720","e":"scroll","c":89,"u":89},{"d":"20260720","e":"select_item__package","c":9,"u":9},{"d":"20260720","e":"select_item__profile","c":11,"u":11},{"d":"20260720","e":"service_booking_confirmed","c":1,"u":1},{"d":"20260720","e":"session_start","c":90,"u":90},{"d":"20260720","e":"view_item_list","c":86,"u":86},{"d":"20260721","e":"booking_started","c":27,"u":27},{"d":"20260721","e":"booking_summary_viewed","c":3,"u":3},{"d":"20260721","e":"first_visit","c":81,"u":81},{"d":"20260721","e":"form_start","c":3,"u":3},{"d":"20260721","e":"page_view__booking","c":31,"u":31},{"d":"20260721","e":"page_view__enq_form","c":3,"u":3},{"d":"20260721","e":"page_view__landing","c":85,"u":85},{"d":"20260721","e":"scroll","c":49,"u":49},{"d":"20260721","e":"select_item__package","c":10,"u":10},{"d":"20260721","e":"select_item__profile","c":14,"u":14},{"d":"20260721","e":"session_start","c":81,"u":81},{"d":"20260721","e":"view_item_list","c":65,"u":65}];
+// Landing locale split (users) — single page_view__landing event carries no per-locale dimension, so these are the authoritative all-window totals. UAE only (Dubai) — no KSA locales exist.
+const TUTOR_MIX = {
+  landingEn: 1409,   // /en
+  landingAr: 845     // /ar  (UAE only — /en 1409 + /ar 845 = 2254; no KSA)
 };
 
 // Order-mix (Nannies, period-wide aggregate for now)
@@ -1272,7 +1287,8 @@ const SERVICE_DATA_RANGES = {
   'Wallpaper':          { min: '2026-05-12', max: '2026-06-24' },
   'Party Planning':     { min: '2026-05-21', max: '2026-07-21' },
   'Doctor at Home':     { min: '2026-05-21', max: '2026-07-21' },
-  'Telehealth':         { min: '2026-05-21', max: '2026-07-21' }
+  'Telehealth':         { min: '2026-05-21', max: '2026-07-21' },
+  'Tutor at Home':      { min: '2026-05-21', max: '2026-07-21' }
 };
 
 function getServiceDataRange(svc) {
@@ -1621,6 +1637,41 @@ function aggTelehealth(range) {
   };
 }
 
+function aggTutorEvents(range) {
+  const out = {};
+  for (const r of TUTOR_EVENTS) {
+    if (r.d < range[0] || r.d > range[1]) continue;
+    if (!out[r.e]) out[r.e] = { c: 0, u: 0 };
+    out[r.e].c += r.c;
+    out[r.e].u += r.u;
+  }
+  return out;
+}
+function aggTutor(range) {
+  const a = aggTutorEvents(range);
+  const u = (k) => (a[k] || { u: 0 }).u;
+  // Landing has no per-locale dimension in this dataset. Show the authoritative all-window UAE split
+  // (/en 1409 · /ar 845) only when the full data window is selected; otherwise omit to avoid implying
+  // a split that isn't in the range-filtered data. Dubai-only — no KSA locales exist.
+  const fullWindow = (range[0] === '20260521' && range[1] === '20260721');
+  return {
+    landing:        u('page_view__landing'),
+    landingEn:      fullWindow ? TUTOR_MIX.landingEn : null,
+    landingAr:      fullWindow ? TUTOR_MIX.landingAr : null,
+    enqForm:        u('page_view__enq_form'),
+    enqSubmit:      u('page_view__enq_success'),   // 0 — page_view__enq_success absent (no generate_lead exists)
+    reachedBooking: u('page_view__booking'),
+    packageSel:     u('select_item__package'),
+    formStart:      u('form_start'),
+    summary:        u('booking_summary_viewed'),
+    purchased:      u('place_order'),              // 1 paid booking (GA); no backend shared
+    bookingStarted: u('booking_started'),          // double-fires — breakdown only, not a funnel step
+    profileSel:     u('select_item__profile'),     // educator-profile clicks — engagement
+    viewList:       u('view_item_list'),
+    whatsapp:       u('whatsapp')
+  };
+}
+
 function aggKids(range) {
   const a = aggKidsEvents(range);
   const u = (k) => (a[k] || { u: 0 }).u;
@@ -1732,6 +1783,18 @@ function renderFunnelTopStats(svc, range) {
       ufStat({label:'Contact Info Entered', value:fmt(a.contact), pill:pctOf(a.contact,a.landing)+' of landed', note:'contact_info_entered', accent:'#0ea5e9', icon:'book'}),
       ufStat({label:'Summary Viewed', value:fmt(a.summary), pill:pctOf(a.summary,a.landing)+' of landed', note:'booking_summary_viewed', accent:'#f59e0b', icon:'cart'}),
       ufStat({label:'Consultation Booked', value:fmt(a.booked), pill:pctOf(a.booked,a.landing)+' of landed', note:'service_booking_confirmed ✓', accent:'#22c55e', icon:'check', good:true})
+    ].join('');
+    return;
+  }
+  if (isTutorService(svc)) {
+    const a = aggTutor(range);
+    el.innerHTML = [
+      ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'page_view · locale roots', accent:'#3b82f6', icon:'eye'}),
+      ufStat({label:'Enquiry Form', value:fmt(a.enqForm), pill:pctOf(a.enqForm,a.landing)+' of landed', note:'page_view · /request-consultation', accent:'#6366f1', icon:'book'}),
+      ufStat({label:'Enquiry Submitted', value:fmt(a.enqSubmit), pill:pctOf(a.enqSubmit,a.landing)+' of landed', note:'/request-consultation/success', accent:'#f59e0b', icon:'cart'}),
+      ufStat({label:'Reached Booking', value:fmt(a.reachedBooking), pill:pctOf(a.reachedBooking,a.landing)+' of landed', note:'page_view · /booking', accent:'#0ea5e9', icon:'book'}),
+      ufStat({label:'Package Selected', value:fmt(a.packageSel), pill:pctOf(a.packageSel,a.landing)+' of landed', note:'select_item · tutor_packages', accent:'#f97316', icon:'cart'}),
+      ufStat({label:'Purchased', value:fmt(a.purchased), pill:'backend N/A', note:'place_order (GA)', accent:'#22c55e', icon:'check', good:true})
     ].join('');
     return;
   }
@@ -1924,6 +1987,30 @@ function renderFunnelPyramid(svc, range) {
     wrap.innerHTML = renderPyramidLayout(steps);
     return;
   }
+  if (isTutorService(svc)) {
+    title.textContent = 'Tutor at Home User Journey';
+    const a = aggTutor(range);
+    const landMeta = (a.landingEn != null && a.landingAr != null)
+      ? `UAE only (Dubai) · /en ${a.landingEn} · /ar ${a.landingAr}`
+      : 'UAE only (Dubai)';
+    const enquirySteps = [
+      { label:'Landed', event:'page_view · locale roots', users:a.landing, meta:landMeta },
+      { label:'Enquiry Form Reached', event:'page_view · /request-consultation', users:a.enqForm, meta:"Reached 'Request a Free Consultation'" },
+      { label:'Enquiry Submitted ✓', event:'page_view · /request-consultation/success', users:a.enqSubmit, meta:'No /success page_views in window (no generate_lead exists)' }
+    ];
+    const bookingSteps = [
+      { label:'Landed', event:'page_view · locale roots', users:a.landing, meta:landMeta },
+      { label:'Reached Booking', event:'page_view · /booking', users:a.reachedBooking, meta:"Clicked 'Book an Educator', reached wizard" },
+      { label:'Package Selected', event:'select_item · tutor_packages', users:a.packageSel, meta:'Picked a learning plan' },
+      { label:'Address Page', event:'form_start · tutor_at_home_booking', users:a.formStart, meta:'Started the address/details form' },
+      { label:'Summary Viewed', event:'booking_summary_viewed', users:a.summary, meta:'Reviewed order' },
+      { label:'Purchased', event:'place_order / purchase', users:a.purchased, meta:'1 paid booking (GA); no backend shared' }
+    ];
+    const sub = document.getElementById('funnel-pyramid-sub');
+    if (sub) sub.textContent = 'Site rebranded "Educators at Home". Two funnels: 🎯 Enquiry (Request a Consultation) + 🛒 Booking (Book an Educator). Dubai-only, UAE traffic only. Left = event source · Step N; right = users, % of landed, drop-off.';
+    wrap.innerHTML = renderTutorDualPyramid(enquirySteps, bookingSteps);
+    return;
+  }
   if (isPartyService(svc)) {
     title.textContent = 'Party Planning User Journey';
     const a = aggParty(range);
@@ -2094,6 +2181,15 @@ function renderPartyDualPyramid(intentSteps, bookingSteps) {
     ${partyFunnelBlock(bookingSteps, '🛒 Booking Funnel (Dubai-only)', 560, 460)}
   </div>`;
 }
+function renderTutorDualPyramid(enquirySteps, bookingSteps) {
+  // Stacked + centered, not side-by-side. Reuses partyFunnelBlock verbatim.
+  // Enquiry is the small 3-step funnel; Booking is the taller detailed funnel below it.
+  return `<div>
+    ${partyFunnelBlock(enquirySteps, '🎯 Enquiry Funnel (Request a Consultation)', 340, 220)}
+    <div style="height:1px;background:var(--border,#e5e7eb);margin:22px 0;"></div>
+    ${partyFunnelBlock(bookingSteps, '🛒 Booking Funnel (Book an Educator)', 560, 470)}
+  </div>`;
+}
 
 function renderFunnelRevenue(svc, range) {
   const card = document.getElementById('funnel-revenue-card');
@@ -2215,6 +2311,15 @@ function renderFunnelRevenue(svc, range) {
       <div class="rm-title">Consultations (Free promo)</div>
       <div style="font-size:12px;color:#374151;padding:2px 0 4px;">Free tele-consultation — no revenue.</div>
       <div style="font-size:11px;color:#1e40af;margin-top:6px;background:#dbeafe;padding:6px 8px;border-radius:4px;">Telehealth consultations are free (limited-time promo; was AED 49). ${fmt(a.booked)} consultations booked in the selected period (service_booking_confirmed). No payment step — the co-fire batch (begin_checkout / add_payment_info / place_order / form_submit / service_booking_confirmed) all equal the booked count; no purchase event fires (correct for a free flow).</div>
+    </div>`;
+    return;
+  }
+  if (isTutorService(svc)) {
+    card.style.display = '';
+    grid.innerHTML = `<div class="rev-mix-block" style="grid-column:1/-1;">
+      <div class="rm-title">Orders</div>
+      <div style="font-size:12px;color:#374151;padding:2px 0 4px;">No backend order data shared for Tutor at Home.</div>
+      <div style="font-size:11px;color:#92400e;margin-top:6px;background:#fef3c7;padding:6px 8px;border-radius:4px;">GA shows 1 place_order in the booking flow (no purchase event). Enquiry flow has no order (it's a callback request tracked by the /request-consultation/success page_view, which had 0 hits in this window). Booking is the more-used flow (412 reached the wizard) but conversion to paid is ~1.</div>
     </div>`;
     return;
   }
@@ -2381,6 +2486,16 @@ function renderFunnelFindings(svc, range) {
       <div class="uf-finding"><strong>Free flow — no purchase event (correct)</strong><span>The terminal batch (begin_checkout / add_payment_info / place_order / form_submit / service_booking_confirmed) all = ${a.booked} and co-fire; no purchase event fires because it's free. The historic "purchase broken P0" no longer applies.</span></div>
       <div class="uf-finding"><strong>form_start (${a.formStart}) &gt; booking_started (${a.bookConsult})</strong><span>form_start double-fires (mount + first field); kept in the breakdown, not used as a funnel step.</span></div>
       <div class="uf-finding"><strong>WhatsApp negligible (${a.whatsapp} users)</strong><span>Side exit only — not a meaningful path for this service.</span></div>`;
+    return;
+  }
+  if (isTutorService(svc)) {
+    const a = aggTutor(range);
+    el.innerHTML = `
+      <div class="uf-finding warn"><strong>Two flows, both barely convert</strong><span>Enquiry: ${fmt(a.landing)} landed → ${a.enqForm} reached form → ${a.enqSubmit} submitted. Booking: ${fmt(a.landing)} → ${a.reachedBooking} reached wizard → ${a.packageSel} picked a plan → ${a.summary} reviewed summary → ${a.purchased} paid.</span></div>
+      <div class="uf-finding"><strong>Booking is the dominant intent</strong><span>${a.reachedBooking} reached the booking wizard vs ${a.enqForm} the enquiry form — but only ${a.purchased} paid booking (GA place_order).</span></div>
+      <div class="uf-finding warn"><strong>No generate_lead / no enquiry_started</strong><span>Enquiry is tracked ONLY by page paths (/request-consultation → /success). 0 /success page_views in the window — enquiry submissions ≈ 0 (or re-pull to confirm).</span></div>
+      <div class="uf-finding"><strong>booking_started (${a.bookingStarted}) double-fires</strong><span>Fires on both "Book an Educator" and "Confirm &amp; Continue" — breakdown only, not a funnel step. select_item splits by path: ${a.profileSel} educator-profile clicks vs ${a.packageSel} package selects.</span></div>
+      <div class="uf-finding"><strong>Dubai-only, UAE traffic only</strong><span>${(a.landingEn != null && a.landingAr != null) ? `/en ${a.landingEn} · /ar ${a.landingAr}` : 'UAE only'} — no KSA. Site rebranded "Educators at Home".</span></div>`;
     return;
   }
   if (isPartyService(svc)) {
@@ -2671,6 +2786,39 @@ const TELEHEALTH_STAGES = [
   ]}
 ];
 
+const TUTOR_STAGES = [
+  { stage: 'Stage 1 — Landing', events: [
+    { e: 'page_view__landing',     label: 'page_view (Landing — locale roots /en, /ar)',                step: '1. Landed' },
+    { e: 'session_start',          label: 'session_start',                                              step: '' },
+    { e: 'first_visit',            label: 'first_visit',                                                step: '' },
+    { e: 'scroll',                 label: 'scroll',                                                     step: '' },
+    { e: 'view_item_list',         label: 'view_item_list (educators rendered)',                        step: '' }
+  ]},
+  { stage: 'Stage 2 — Enquiry', events: [
+    { e: 'page_view__enq_form',    label: 'page_view (Enquiry form — /request-consultation)',           step: '2. Enquiry Form Reached' },
+    { e: 'page_view__enq_success', label: 'page_view (Enquiry submitted — /request-consultation/success · no generate_lead)', step: '3. Enquiry Submitted ✓ (0 in window)' }
+  ]},
+  { stage: 'Stage 3 — Booking intent', events: [
+    { e: 'booking_started',        label: 'booking_started (double-fires — not a funnel step)',         step: '(double-fires — not a funnel step)' },
+    { e: 'page_view__booking',     label: 'page_view (Reached booking — /booking)',                     step: '2. Reached Booking' },
+    { e: 'select_item__profile',   label: 'select_item (educator-profile clicks — engagement)',         step: '(educator-profile clicks — engagement)' },
+    { e: 'select_item__package',   label: 'select_item (tutor_packages — picked a learning plan)',      step: '3. Package Selected' }
+  ]},
+  { stage: 'Stage 4 — Booking details', events: [
+    { e: 'form_start',             label: 'form_start (address/details form — tutor_at_home_booking)',  step: '4. Address Page' },
+    { e: 'booking_summary_viewed', label: 'booking_summary_viewed (reviewed order)',                    step: '5. Summary Viewed' }
+  ]},
+  { stage: 'Stage 5 — Conversion', events: [
+    { e: 'begin_checkout',            label: 'begin_checkout (co-fire)',                                step: '(co-fire)' },
+    { e: 'add_payment_info',          label: 'add_payment_info (co-fire)',                              step: '(co-fire)' },
+    { e: 'place_order',               label: 'place_order (1 paid booking — GA; no backend shared)',    step: '6. Purchased ✓' },
+    { e: 'form_submit',               label: 'form_submit (co-fire)',                                   step: '(co-fire)' },
+    { e: 'service_booking_confirmed', label: 'service_booking_confirmed (co-fire)',                     step: '(co-fire)' },
+    { e: 'purchase',                  label: 'purchase (never fires — 0)',                              step: '(never fires — 0)' },
+    { e: 'whatsapp',                  label: 'WhatsApp click (api.whatsapp.com — side exit)',           step: '(side exit · 1)' }
+  ]}
+];
+
 const GEAR_STAGES = [
   { stage: 'Stage 1 — Landing', events: [
     { e: 'page_view__landing',           label: 'page_view (Homepage — /en, /ar)',                  step: '1. Home Page Viewed' }
@@ -2761,6 +2909,7 @@ function renderFunnelBreakdown(svc, range) {
   const isParty = isPartyService(svc);
   const isDoctor = isDoctorService(svc);
   const isTele = isTelehealthService(svc);
+  const isTutor = isTutorService(svc);
   const ag = isNannies  ? aggNanniesEvents(range)
            : isKids     ? aggKidsEvents(range)
            : isGear     ? aggGearEvents(range)
@@ -2770,6 +2919,7 @@ function renderFunnelBreakdown(svc, range) {
            : isParty    ? aggPartyEvents(range)
            : isDoctor   ? aggDoctorEvents(range)
            : isTele     ? aggTelehealthEvents(range)
+           : isTutor    ? aggTutorEvents(range)
            : aggGeneric(svc, range);
   // Party Planning: backend paid orders (2 lifetime) are not a GA event — inject the row so the
   // conversion stage renders (mirrors how other services carry order_confirmed in their event arrays).
@@ -2781,6 +2931,18 @@ function renderFunnelBreakdown(svc, range) {
     ag['purchase']       = ag['purchase']       || { c: 0, u: 0 };
     ag['order_confirmed'] = ag['order_confirmed'] || { c: 0, u: 0 };
   }
+  // Tutor at Home: page_view__enq_success (no generate_lead) never fires; purchase / co-fire conversion
+  // events are sparse. Inject the 0-rows so the enquiry-submitted step and full conversion stage render
+  // explicitly instead of hiding the honest zeros (see keepZero below).
+  if (isTutor) {
+    ag['page_view__enq_success']    = ag['page_view__enq_success']    || { c: 0, u: 0 };
+    ag['place_order']               = ag['place_order']               || { c: 0, u: 0 };
+    ag['purchase']                  = ag['purchase']                  || { c: 0, u: 0 };
+    ag['service_booking_confirmed'] = ag['service_booking_confirmed'] || { c: 0, u: 0 };
+    ag['begin_checkout']            = ag['begin_checkout']            || { c: 0, u: 0 };
+    ag['add_payment_info']          = ag['add_payment_info']          || { c: 0, u: 0 };
+    ag['form_submit']               = ag['form_submit']               || { c: 0, u: 0 };
+  }
   const stages = isNannies  ? NANNIES_STAGES
                : isKids     ? KIDS_STAGES
                : isGear     ? GEAR_STAGES
@@ -2790,6 +2952,7 @@ function renderFunnelBreakdown(svc, range) {
                : isParty    ? PARTY_STAGES
                : isDoctor   ? DOCTOR_STAGES
                : isTele     ? TELEHEALTH_STAGES
+               : isTutor    ? TUTOR_STAGES
                : GENERIC_STAGES;
   const tbody = document.getElementById('funnel-breakdown-tbody');
   // Landing baseline for % calculation (page_view on landing for all services)
@@ -2801,7 +2964,9 @@ function renderFunnelBreakdown(svc, range) {
   let html = '';
   // For Doctor at Home, keep the injected 0-value conversion rows (place_order / purchase / order_confirmed)
   // so the "funnel collapses at Book Now" story renders explicitly instead of hiding the empty conversion stage.
-  const keepZero = isDoctor ? new Set(['place_order','purchase','order_confirmed']) : null;
+  const keepZero = isDoctor ? new Set(['place_order','purchase','order_confirmed'])
+                 : isTutor  ? new Set(['page_view__enq_success','place_order','purchase','service_booking_confirmed','begin_checkout','add_payment_info','form_submit'])
+                 : null;
   stages.forEach(stg => {
     const stageRows = stg.events.filter(ev => ag[ev.e] && (ag[ev.e].c > 0 || ag[ev.e].u > 0 || (keepZero && keepZero.has(ev.e))));
     if (!stageRows.length) return;
@@ -3011,6 +3176,7 @@ function renderTrends() {
     }
     if (svc === 'Doctor at Home') return 0;   // 0 completed bookings — AOV N/A (list price AED 149)
     if (svc === 'Telehealth') return 0;       // free tele-consultation — no revenue
+    if (svc === 'Tutor at Home') return 0;    // no backend order data shared
     return 0;
   }
 

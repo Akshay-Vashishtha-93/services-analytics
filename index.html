@@ -1296,7 +1296,7 @@ function partyOrdersInRange(range) {
 
 const SERVICE_DATA_RANGES = {
   'Babysitter / Nanny': { min: '2026-05-12', max: '2026-07-21' },
-  'Kids Interior':      { min: '2026-05-12', max: '2026-07-22' },
+  'Kids Interior':      { min: '2026-05-21', max: '2026-07-22' },
   'Gear Refresh':       { min: '2026-05-12', max: '2026-07-21' },
   'Home Cleaning':      { min: '2026-05-12', max: '2026-07-21' },
   'Healthy Home':       { min: '2026-05-12', max: '2026-07-21' },
@@ -1610,7 +1610,8 @@ function aggDoctor(range) {
   // a split that isn't in the range-filtered data. Dubai-only — no KSA locales exist.
   const fullWindow = (range[0] === '20260521' && range[1] === '20260721');
   return {
-    landing:        u('page_view__landing'),
+    landing:        u('session_start'),        // Landed = sessions (session_start), full coverage
+    homepage:       u('page_view__landing'),    // secondary: homepage locale roots
     landingEn:      fullWindow ? 321 : null,
     landingAr:      fullWindow ? 141 : null,
     viewList:       u('view_item_list'),
@@ -1694,7 +1695,8 @@ function aggKids(range) {
   const a = aggKidsEvents(range);
   const u = (k) => (a[k] || { u: 0 }).u;
   return {
-    landing:   u('page_view__landing'),
+    landing:   u('session_start'),        // Landed = sessions (session_start); series starts May 21
+    homepage:  u('page_view__landing'),    // secondary: homepage locale roots
     scroll:    u('scroll__landing'),
     viewNurse: u('view_item_list__nursery'),
     viewKids:  u('view_item_list__kids'),
@@ -1784,7 +1786,7 @@ function renderFunnelTopStats(svc, range) {
   if (isDoctorService(svc)) {
     const a = aggDoctor(range);
     el.innerHTML = [
-      ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'page_view · locale roots', accent:'#3b82f6', icon:'eye'}),
+      ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'session_start · sessions', accent:'#3b82f6', icon:'eye'}),
       ufStat({label:'Viewed Package', value:fmt(a.viewList), pill:pctOf(a.viewList,a.landing)+' of landed', note:'view_item_list', accent:'#6366f1', icon:'book'}),
       ufStat({label:'Booking Started', value:fmt(a.bookingStarted), pill:pctOf(a.bookingStarted,a.landing)+' of landed', note:'booking_started', accent:'#0ea5e9', icon:'book'}),
       ufStat({label:'Address Page', value:fmt(a.formStart), pill:pctOf(a.formStart,a.landing)+' of landed', note:'form_start', accent:'#f59e0b', icon:'cart'}),
@@ -1859,7 +1861,7 @@ function renderFunnelTopStats(svc, range) {
     const cvr = a.landing > 0 ? (a.orders/a.landing*100).toFixed(3) : '0.000';
     const waAll = a.waTop + a.waBot;
     el.innerHTML = [
-      ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'Step 1 · page_view', accent:'#3b82f6', icon:'eye'}),
+      ufStat({label:'Landed', value:fmt(a.landing), pill:'Entry point', note:'session_start · sessions', accent:'#3b82f6', icon:'eye'}),
       ufStat({label:'Select Package', value:fmt(a.selectPkg), pill:pctOf(a.selectPkg,a.landing)+' of landed', note:'Step 3 · select_item', accent:'#6366f1', icon:'book'}),
       ufStat({label:'WhatsApp Clicks', value:fmt(waAll), pill:pctOf(waAll,a.landing)+' of landed', note:fmt(a.waTop)+' top + '+fmt(a.waBot)+' support', accent:'#16a34a', icon:'chat'}),
       ufStat({label:'Consultation Requested', value:fmt(a.success), pill:pctOf(a.success,a.landing)+' of landed', note:'Step 6 · form submitted', accent:'#f59e0b', icon:'cart'}),
@@ -1979,7 +1981,7 @@ function renderFunnelPyramid(svc, range) {
       ? `UAE only (Dubai) · /en ${a.landingEn} · /ar ${a.landingAr}`
       : 'UAE only (Dubai)';
     const steps = [
-      { label:'Landed', event:'page_view · locale roots (/en, /ar) + /flu-vaccine', users:a.landing, meta:landMeta },
+      { label:'Landed', event:'session_start · sessions', users:a.landing, meta:'Sessions (all entries). '+landMeta },
       { label:'Viewed Package', event:'view_item_list', users:a.viewList, meta:'Flu vaccine package rendered' },
       { label:'Booking Started', event:'booking_started', users:a.bookingStarted, meta:"Tapped 'Book Now'" },
       { label:'Address Page', event:'form_start · doctor_at_home_booking', users:a.formStart, meta:'Reached the visit-details / address form' },
@@ -2070,7 +2072,7 @@ function renderFunnelPyramid(svc, range) {
     title.textContent = 'Kids & Nursery Room User Journey';
     const a = aggKids(range);
     const steps = [
-      { label:'Homepage', event:'page_view · locale roots (/en, /ar)', users:a.landing, meta:'User landed on Kids & Nursery Room homepage' },
+      { label:'Sessions (Landed)', event:'session_start · sessions', users:a.landing, meta:`Sessions (all entries) — homepage roots: ${fmt(a.homepage)}. Series from May 21.` },
       { label:'Select Package', event:'select_item · kids_nursery_packages', users:a.selectPkg, meta:'Picked a specific package on the listing' },
       { label:'Request Consultation', event:'page_view · /request-consultation', users:a.request, meta:'Reached the consultation form page' },
       { label:'Contact Info Entered', event:'contact_info_entered', users:a.contact, meta:'Filled name + email + phone' },
@@ -3009,7 +3011,7 @@ function renderFunnelBreakdown(svc, range) {
                : GENERIC_STAGES;
   const tbody = document.getElementById('funnel-breakdown-tbody');
   // Landing baseline for % calculation (page_view on landing for all services)
-  const landingRow = (isNannies ? ag['session_start'] : null) || ag['page_view__landing'] || ag['page_view'] || { c: 0, u: 0 };
+  const landingRow = ((isNannies||isKids||isDoctor) ? ag['session_start'] : null) || ag['page_view__landing'] || ag['page_view'] || { c: 0, u: 0 };
   const landingUsers = landingRow.u || 0;
   const landingEvents = landingRow.c || 0;
   const pctU = (n) => landingUsers > 0 ? ' <span style="color:#94a3b8;font-size:10.5px;">(' + (n/landingUsers*100).toFixed(1) + '%)</span>' : '';
